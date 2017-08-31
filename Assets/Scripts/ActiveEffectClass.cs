@@ -16,8 +16,8 @@ public class ActiveEffectClass : MonoBehaviour {
 }
 
 public class MultiTurnTileEffect : ActiveEffectClass {
-	TileClass targetTile;
-	TileClass effectEndTile;
+//	TileClass targetTile;
+//	TileClass effectEndTile;
 
 	// When tile effect finishes, trigger build completion funciton
 	public override void IncrementTurn() {
@@ -28,6 +28,6 @@ public class MultiTurnTileEffect : ActiveEffectClass {
 	}
 
 	public virtual void OnBuildCompletion () {
-		print ("Tile " + targetTile.tileName + " has turned into tile " + effectEndTile.tileName);
+//		print ("Tile " + targetTile.tileName + " has turned into tile " + effectEndTile.tileName);
 	}
 }

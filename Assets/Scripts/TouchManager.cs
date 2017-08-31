@@ -10,9 +10,17 @@ public class TouchManager : MonoBehaviour {
 	public int cameraOrthographicZoomSize;
 
 	private float worldViewLength, worldViewHeight, fieldMinX, fieldMaxX, fieldLength;
-	private bool isZoomedIn;
+	private bool isZoomedIn, isZooming, isCentering;
 
 	public Text xyPrintOut;
+
+	private Vector2 touchOrigin, t1Origin, t2Origin;
+	private float zoomTouchOriginMagnitude;
+	private bool isMoving;
+	private Vector3 cameraOrigin;
+
+	// Animation increment count
+	int incrementCount = 25;
 
 	void Awake() {
 		if (instance == null) {
@@ -40,10 +48,95 @@ public class TouchManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		// If new touch was made
-		if (Input.touchCount > 0 && Input.GetTouch (0).phase == TouchPhase.Began) {
+		// Single touch
+		if (Input.touchCount == 1) {
+			
 			Touch t = Input.GetTouch (0);
-			ScreenTap (t.position.x, t.position.y);
+
+			// Save single touch origin
+			if (t.phase == TouchPhase.Began) {
+				touchOrigin = Input.GetTouch (0).position;
+
+			} else if (t.phase == TouchPhase.Moved) {
+				if (isMoving) {
+					CameraCenter (cameraOrigin.x + (Screen.width / 2) + (touchOrigin.x - t.position.x), 
+						cameraOrigin.y + (Screen.height / 2) + (touchOrigin.y - t.position.y));
+				} 
+				// Detect if user wants to move camera (only allow if zoomed in
+				else if (isZoomedIn && Mathf.Abs (t.position.x - touchOrigin.x) > (Screen.width / 100) &&
+					Mathf.Abs (t.position.y - touchOrigin.y) > (Screen.height / 100)) {
+					isMoving = true;
+					cameraOrigin = Camera.main.transform.position;
+				} 
+			} else if (t.phase == TouchPhase.Ended) {
+				if (!isMoving && Mathf.Abs (t.position.x - touchOrigin.x) < (Screen.width / 100) &&
+				    Mathf.Abs (t.position.y - touchOrigin.y) < (Screen.height / 100)) {
+					// Touch is a tap
+					ScreenTap (t.position.x, t.position.y);
+				} 
+				isMoving = false;
+			}
+		} 
+		// Pinch zoom, adapted from the Unity Tutorial: 
+		// https://unity3d.com/learn/tutorials/topics/mobile-touch/pinch-zoom
+		else if (Input.touchCount == 2) {
+			Touch t1 = Input.GetTouch (0);
+			Touch t2 = Input.GetTouch (1);
+
+			isMoving = false;
+
+			// Set center touch origin
+			if (t1.phase == TouchPhase.Began) {
+				t1Origin = t1.position;
+				t2Origin = t2.position;
+
+				// Get distance between original touches
+				zoomTouchOriginMagnitude = (t1Origin - t2Origin).magnitude;
+
+				// Get central point between original 2 touches
+				touchOrigin.x = (t1Origin.x + t2Origin.x) / 2;
+				touchOrigin.y = (t1Origin.y + t2Origin.y) / 2;
+			} else if (t1.phase == TouchPhase.Moved) {
+
+				// Find the magnitude of the vector (the distance) between the touches
+				float touchDeltaMag = (t1.position - t2.position).magnitude;
+
+				// Find the difference in the distances between each frame.
+				float deltaMagnitudeDiff = zoomTouchOriginMagnitude - touchDeltaMag;
+
+				if (deltaMagnitudeDiff > 0) {
+					ZoomToPoint (true, (t1Origin.x + t2Origin.x)/2, (t1Origin.y + t2Origin.y)/2);
+				} else {
+					ZoomToPoint (false);
+				}
+			}
+
+			else if (t1.phase == TouchPhase.Ended) {
+				// Animate zoom out to center
+				if (isZoomedIn) {
+					ZoomToPoint (false);
+				} else {
+					// Animate zoom in to center location between 2 fingers
+
+					float centerX, centerY;
+
+					// Get center X value
+					if (t1.position.x < t2.position.x) {
+						centerX = t1.position.x - t2.position.x;
+					} else {
+						centerX = t2.position.x - t1.position.x;
+					}
+
+					// Get center y value
+					if (t1.position.y < t2.position.y) {
+						centerY = t1.position.y - t2.position.y;
+					} else {
+						centerY = t2.position.y - t1.position.y;
+					}
+
+					ZoomToPoint (true, centerX, centerY);
+				}
+			}
 		}
 
 		#if UNITY_EDITOR
@@ -56,12 +149,10 @@ public class TouchManager : MonoBehaviour {
 		}
 		if (Input.mouseScrollDelta.y < 0) {
 			// Zoom out
-			Zoom (false, 0, 0);
-			print ("Mouse wheel down");
+			ZoomToPoint (false);
 		} else if (Input.mouseScrollDelta.y > 0) {
 			// Zoom in
-			print("Mouse wheel up");
-			Zoom (true, Input.mousePosition.x, Input.mousePosition.y);
+			ZoomToPoint (true, Input.mousePosition.x, Input.mousePosition.y);
 		}
 		#endif
 	}
@@ -89,6 +180,13 @@ public class TouchManager : MonoBehaviour {
 			float xPosRatio = x / Screen.width;
 			float yPosRatio = y / Screen.height;
 
+			// Check zoomed in UI touch
+			if (UIManager.instance.actionBarUI.GetBool ("SlideIn") &&
+				xPosRatio < 0.23f) {
+				print ("Zoomed in UI Touch");
+				return;
+			}
+
 			// Get the position of the touch in the world space, where (0,0) is the top left corner
 			xTouchWorldPos = (Screen.width / 2) + cameraMinX + xPosRatio * (cameraMaxX - cameraMinX);
 			yTouchWorldPos = worldViewHeight - ((Screen.height / 2) + cameraMinY + yPosRatio * (cameraMaxY - cameraMinY));
@@ -97,13 +195,13 @@ public class TouchManager : MonoBehaviour {
 		else {
 			xTouchWorldPos = x * worldViewLength / Screen.width;
 			yTouchWorldPos = worldViewHeight - (y * worldViewHeight / Screen.height); // Y starts at top, increases going down
-		}
 
-		// User taps the UI window, do not select tiles beneath it
-		if (UIManager.instance.actionBarUI.GetBool ("SlideIn") && 
-			xTouchWorldPos < 0.23f * worldViewLength) {
-			print ("UI Touch");
-			return;
+			// Check zoomed out UI touch
+			if (UIManager.instance.actionBarUI.GetBool ("SlideIn") &&
+			    xTouchWorldPos < 0.23f * worldViewLength) {
+				print ("Zoomed out UI Touch");
+				return;
+			}
 		}
 
 		// Select a field tile
@@ -132,27 +230,129 @@ public class TouchManager : MonoBehaviour {
 		}
 	}
 
+	// Takes 2 grid coordinates and converts them to world space coordinates
+	public Vector2 GridToScreenCoordinates (int gridX, int gridY) {
+		float screenX = (gridX * fieldLength / GameStateManager.instance.xSize) + fieldMinX;
+		float screenY = worldViewHeight - (gridY * worldViewHeight / GameStateManager.instance.ySize);
+
+		Vector2 screenCoord = new Vector2 (screenX, screenY);
+		return screenCoord;
+	}
+
+	/// <summary>
+	/// Zooms in/out to point (x, y). For zoom out, just enter false as parameter to zoom out to screen center.
+	/// </summary>
+	/// <param name="zoomIn">If set to <c>true</c> zoom in. Else, zoom out.</param>
+	/// <param name="x">The x coordinate.</param>
+	/// <param name="y">The y coordinate.</param>
+	public void ZoomToPoint(bool zoomIn, float x = 0, float y = 0) {
+		// Always zoom out to screen center
+		if (!zoomIn) {
+			x = Screen.width / 2;
+			y = Screen.height / 2;
+		}
+		StartCoroutine (AnimateZoom (zoomIn));
+		StartCoroutine (AnimateCameraCenter (x, y));
+	}
+
 	// Zooms in or out on center 
-	void Zoom(bool zoomIn, float x, float y) {
+	public IEnumerator AnimateZoom(bool zoomIn) {
+
+		// Restrict multiple zooms
+		if (isZooming) {
+			yield break;
+		} else {
+			isZooming = true;
+		}
+
 		// If already zoomed in do nothing
 		if (zoomIn && !isZoomedIn) {
-		
-			if (x < fieldMinX) {
-				x = fieldMinX;
-			} else if (x > fieldMaxX) {
-				x = fieldMaxX;
+			isZoomedIn = true;
+
+			for (int i = 0; i < incrementCount; i++) {
+				Camera.main.orthographicSize = (Screen.height / 2) - ((Screen.height * i) / (4 * incrementCount));
+				yield return new WaitForSeconds (0.001f);
 			}
+			Camera.main.orthographicSize = Screen.height / 4; // Ensure the camera has correct orthographic size after animation
+		} else if (!zoomIn) {
+			isZoomedIn = false;
 
-			x = x - (Screen.width /2);
-			y = y - (Screen.height / 2);
+			for (int i = 0; i < incrementCount; i++) {
+				Camera.main.orthographicSize = (Screen.height / 4) + ((Screen.height * i) / (4 * incrementCount));
+				yield return new WaitForSeconds (0.001f);
+			}
+			Camera.main.orthographicSize = Screen.height / 2; // Ensure the camera has correct orthographic size after animation
+		}
 
+		isZooming = false;
+	}
+
+	// Animates the camera towards and centering on a point
+	public IEnumerator AnimateCameraCenter(float x, float y) {
+
+		// Restrict multiple centers
+		if (isCentering) {
+			yield break;
+		} else {
+			isCentering = true;
+		}
+
+		if (x < fieldMinX) {
+			x = fieldMinX;
+		} else if (x > fieldMaxX) {
+			x = fieldMaxX;
+		}
+
+		// Get position to move camera to
+		x = x - (Screen.width / 2);
+		y = y - (Screen.height / 2);
+
+		Vector3 cameraOrigin = Camera.main.transform.position;
+		Vector3 currentPos = new Vector3 (cameraOrigin.x, cameraOrigin.y, cameraOrigin.z);
+
+		float xIncrement = (x - cameraOrigin.x) / incrementCount;
+		float yIncrement = (y - cameraOrigin.y) / incrementCount;
+
+		for (int i = 0; i < incrementCount; i++) {
+			currentPos.x = cameraOrigin.x + xIncrement * i;
+			currentPos.y = cameraOrigin.y + yIncrement * i;
+
+			Camera.main.transform.position = currentPos;
+
+			yield return new WaitForSeconds (0.001f);
+		}
+
+		// Ensure the camera is in the correct position after animation
+		currentPos.x = x;
+		currentPos.y = y;
+		Camera.main.transform.position = currentPos;
+
+		isCentering = false;
+	}
+
+	// Zooms in or out without animating
+	public void Zoom(bool zoomIn) {
+		// If already zoomed in do nothing
+		if (zoomIn && !isZoomedIn) {
 			isZoomedIn = true;
 			Camera.main.orthographicSize = Screen.height / 4;
-			Camera.main.transform.position = new Vector3 (x, y, -100);
 		} else if (!zoomIn) {
 			isZoomedIn = false;
 			Camera.main.orthographicSize = Screen.height / 2;
-			Camera.main.transform.position = new Vector3 (0, 0, -100);
 		}
+	}
+
+	// Centers camera without animating
+	public void CameraCenter(float x, float y) {
+		if (x < fieldMinX) {
+			x = fieldMinX;
+		} else if (x > fieldMaxX) {
+			x = fieldMaxX;
+		}
+
+		x = x - (Screen.width /2);
+		y = y - (Screen.height / 2);
+
+		Camera.main.transform.position = new Vector3 (x, y, -100);
 	}
 }

@@ -6,8 +6,7 @@ public class MovementManager : MonoBehaviour {
 
 	public static MovementManager instance;
 
-	private List<TileClass> searchedTiles = new List<TileClass>();
-	private List<TileClass> walkableTiles = new List<TileClass>();
+	private List<walkableTileOption> walkableTileOptions = new List<walkableTileOption> ();
 
 	void Awake () {
 		if (instance == null) {
@@ -18,21 +17,23 @@ public class MovementManager : MonoBehaviour {
 	}
 
 	public void ShowPawnMoveOptions() {
-
-		walkableTiles.Clear ();
-		searchedTiles.Clear ();
-		searchedTiles.Add (TileClass.selectedTile);
-
+		
+		walkableTileOptions.Clear ();
 		PawnClass pawn = ((WalkableTile)TileClass.selectedTile).curPawn;
+
+		// Show movement UI
+		Vector2 zoomCoord = TouchManager.instance.GridToScreenCoordinates (pawn.x, pawn.y);
+		TouchManager.instance.ZoomToPoint (true, zoomCoord.x, zoomCoord.y);
+
 		checkWalkableSides (pawn.moveCount - 1, pawn.x, pawn.y);
 
 		print ("mc: " + pawn.moveCount + " x:"  + pawn.x + " y:" + pawn.y);
-		print ("Walkable tiles: " + walkableTiles.Count);
+		print ("Walkable tiles: " + walkableTileOptions.Count);
 
-//		// Display walkable spaces
-//		foreach (TileClass tile in walkableTiles) {
-//			tile.GetComponent <SpriteRenderer> ().color = Color.black;
-//		}
+		// Display walkable spaces
+		foreach (walkableTileOption wto in walkableTileOptions) {
+			StartCoroutine (wto.tile.dimSelection (wto.tile.GetComponent <SpriteRenderer> ()));
+		}
 	}
 
 	/// <summary>
@@ -45,23 +46,28 @@ public class MovementManager : MonoBehaviour {
 
 		TileClass curTile = GameStateManager.instance.tiles [x, y];
 
-		// If tile hasn't been searched and we have moves left
-		if (!searchedTiles.Contains (curTile) &&  moveCount >= 0) {
-			// If tile isn't walkable or tile has pawn on it
-			if (curTile is NonWalkableTile ||
-				(curTile is WalkableTile && ((WalkableTile)curTile).curPawn != null)) 
-			{
-				searchedTiles.Add (curTile);
-				return;
-			} else {
-				searchedTiles.Add (curTile);
-				walkableTiles.Add (curTile);
+		// If tile isn't walkable, no moves left, or tile has pawn on it
+		if (curTile is NonWalkableTile ||
+			(curTile is WalkableTile && ((WalkableTile)curTile).curPawn != null) ||
+			moveCount < 0) {
+			return;
+		} else {
+			walkableTileOption existingWTO = walkableTileOptions.Find (wto => (wto.x == x && wto.y == y));
 
-				// DEBUG: Set walkable tiles to black
-				curTile.GetComponent <SpriteRenderer> ().color = Color.black;
+			if (existingWTO.tile == null) {
+				// Create wto
+				walkableTileOption wto = new walkableTileOption ();
+				wto.moveCount = moveCount;
+				wto.x = x;
+				wto.y = y;
+				wto.tile = curTile;
 
-				checkWalkableSides (moveCount - 1, x, y);
+				walkableTileOptions.Add (wto);
+			} else if (existingWTO.moveCount > moveCount) {
+				existingWTO.moveCount = moveCount;
 			}
+
+			checkWalkableSides (moveCount - 1, x, y);
 		}
 	}
 
@@ -85,5 +91,8 @@ public class MovementManager : MonoBehaviour {
 		}
 	}
 
-
+	public struct walkableTileOption {
+		public int x, y, moveCount;
+		public TileClass tile;
+	}
 }

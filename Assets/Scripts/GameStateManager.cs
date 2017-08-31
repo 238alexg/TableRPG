@@ -35,6 +35,7 @@ public class GameStateManager : MonoBehaviour {
 		} else {
 			Destroy (this);
 		}
+		Application.targetFrameRate = 60;
 	}
 
 	public void BeginGame(bool isSinglePlayer) {
