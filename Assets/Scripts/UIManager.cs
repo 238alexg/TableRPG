@@ -7,13 +7,14 @@ public class UIManager : MonoBehaviour {
 
 	public static UIManager instance;
 
-	public Animator actionBarUI;
+	public Animator actionBarUI, abilitiesBarUI;
 
 	public Text actionBarPawnName, opponentPawnName;
 
 	public Image actionBarPawnImage;
 
-	public Button moveButton, actionButton, statsButton, cardsButton, backButton, performMoveButton;
+	public Button moveButton, actionButton, endTurnButton, action1Button, action2Button, action3Button, backButton;
+	public Text moveButtonText, actionButtonText, endTurnButtonText, action1ButtonText, action2ButtonText, action3ButtonText;
 
 	private List<GameObject> activeUI = new List<GameObject>();
 
@@ -24,6 +25,34 @@ public class UIManager : MonoBehaviour {
 			Destroy (this);
 		}
 	}
+
+	/// <summary>
+	/// Called when a user presses the action button with a pawn selected.
+	/// </summary>
+	public void ActionButtonPress() {
+
+		actionBarUI.SetBool ("SlideUp", true);
+		abilitiesBarUI.SetBool ("SlideIn", true);
+
+		PawnClass pawn = GameSelections.selectedTile.curPawn;
+
+		action1ButtonText.text = pawn.actions [0].actionName;
+//		action2ButtonText.text = pawn.actions [1].actionName;
+//		action3ButtonText.text = pawn.actions [2].actionName;
+
+		action1Button.onClick.AddListener (pawn.actions [0].OnButtonPress);
+
+		if (pawn.level > PawnClass.Level.Novice) {
+			action2Button.interactable = true;
+		} else if (pawn.level > PawnClass.Level.Veteran) {
+			action3Button.interactable = true;
+		}
+	}
+
+	public void ActionBackButtonPress() {
+		actionBarUI.SetBool ("SlideUp", false);
+		abilitiesBarUI.SetBool ("SlideIn", false);
+	}
 		
 	// Slide Action Bar UI in/out
 	public void SlideActionBar(bool slideIn, PawnClass pawn = null) {
@@ -33,6 +62,8 @@ public class UIManager : MonoBehaviour {
 			loadPawnIntoActionBar (pawn);
 		} else if (slideIn) {
 			loadPawnIntoActionBar (pawn);
+			moveButtonText.text = GameSelections.hasMoved ? "DONE" : "MOVE";
+			moveButton.interactable = !GameSelections.hasMoved;
 			actionBarUI.SetBool ("SlideIn", true);
 			activeUI.Add (actionBarUI.gameObject);
 		} else {

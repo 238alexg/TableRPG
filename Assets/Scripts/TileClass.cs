@@ -4,25 +4,82 @@ using UnityEngine;
 
 public class TileClass : MonoBehaviour {
 
-	public static TileClass selectedTile;
+
 	public string tileName;
 	public Sprite sprite;
+	public PawnClass curPawn = null;
 
 	public virtual void TileTap() {
-		if (selectedTile != this) {
-			Select ();
-			selectedTile = this;
+
+		// Check for existing actions including tile
+		if (GameSelections.curAction != null) {
+			if (GameSelections.curAction.tileOptions.Contains (this)) {
+				GameSelections.curAction.OnExecution (this);
+				TouchManager.instance.ClearSelectionsAndUI ();
+				TouchManager.instance.ZoomToPoint (false);
+			} 
+			// User taps outside action area, do nothing
+			else {
+				// TODO: Remove if nothing happens here
+			}
 		}
-		StartCoroutine (dimSelection (selectedTile.GetComponent <SpriteRenderer> ()));
+
+		// Check if pawn can move here, if moving Pawn
+		else if (MovementManager.instance.isMovingPawn) {
+
+			// If tile is within selected pawn's movement range, and pawn has movement left, move it
+			if (UIManager.instance.moveButton.interactable &&
+				MovementManager.instance.walkableTileOptions.Exists (wto => wto.tile == this)) {
+				StartCoroutine (MovementManager.instance.MovePawn (this));
+				return;
+			} 
+		} 
+
+		// Check for pawn on Tile
+		else if (curPawn != null) {
+
+			// If pawn belongs to player whose turn it is
+			if (curPawn.ownership == GameStateManager.instance.turn) {
+
+				if (GameSelections.hasMoved || curPawn == GameSelections.activePlayerPawn) {
+					
+					if (UIManager.instance.abilitiesBarUI.GetBool ("SlideIn")) {
+						// Do nothing, maybe center camera on pawn?
+						UIManager.instance.SlideActionBar (true, curPawn);
+						print ("Action bar already up");
+					} else {
+						// Slide in action bar if it went away
+						UIManager.instance.SlideActionBar (true, curPawn);
+						print ("Action bar NOT already up");
+					}
+				} else {
+					curPawn.SelectPawn ();
+				}
+			} else {
+				// TODO: Load enemy pawn into right UI for tiles/enemies?
+			}
+		} 
+
+		// User just taps tile
+		else {
+			// Select tile, clear UI
+			TouchManager.instance.ClearSelectionsAndUI ();
+		}
+
+		if (GameSelections.selectedTile != this) {
+			Select ();
+			GameSelections.selectedTile = this;
+		}
+		StartCoroutine (dimSelection (GameSelections.selectedTile.GetComponent <SpriteRenderer> ()));
 	}
 
 	public virtual void Select() {
 		print ("Selected a " + tileName + " tile");
 	}
 
-	// TODO: Add parameters for player class to determine if they can 
-	public virtual void AttemptInteration() {
-		print ("Attempting interaction with a " + tileName + " tile");
+	// When pawn walks over tile, if effect happens
+	public virtual void OnWalkOver () {
+		print("Player walked on a " + tileName + " tile");
 	}
 
 	// Dims the selected tile to show it has been selected
@@ -45,7 +102,7 @@ public class TileClass : MonoBehaviour {
 }
 
 public class WalkableTile : TileClass {
-	public PawnClass curPawn = null;
+	
 
 	// Load curPawn into UI
 	public override void Select() {
@@ -57,15 +114,12 @@ public class WalkableTile : TileClass {
 		}
 	}
 
-	// When pawn walks over tile, if effect happens
-	public virtual void OnWalkOver () {
-		print("Player walked on a " + tileName + " tile");
-	}
+
 
 	// Called when a pawn is spawned on this tile
 	public virtual void PlacePawn (PawnClass placedPawn) {
 		curPawn = placedPawn;
-		curPawn.transform.position = transform.position;
+		curPawn.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - 1);
 		curPawn.transform.localScale = transform.localScale;
 	}
 }

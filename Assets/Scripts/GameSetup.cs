@@ -28,7 +28,7 @@ public class GameSetup : MonoBehaviour {
 	}
 
 	void Start () {
-		PredefinedMapSize mapSize = mapSizes [2];
+		PredefinedMapSize mapSize = mapSizes [1];
 		startingPawnSetup pawnSetup = pawnSetups [0];
 		bool isSinglePlayer = false;
 
@@ -48,6 +48,12 @@ public class GameSetup : MonoBehaviour {
 		GameStateManager.instance.BeginGame (isSinglePlayer);
 	}
 
+	/// <summary>
+	/// Creates the board.
+	/// </summary>
+	/// <param name="mapSize">Map size struct.</param>
+	/// Adapted from Ray Wenderlich's tile game tutorial:
+	/// https://www.raywenderlich.com/152282/how-to-make-a-match-3-game-in-unity
 	public void CreateBoard (PredefinedMapSize mapSize) {
 		xSize = mapSize.x;
 		ySize = mapSize.y;
@@ -78,7 +84,7 @@ public class GameSetup : MonoBehaviour {
 		// Make a x by y grid of tiles
 		for (int x = 0; x < xSize; x++) {
 			for (int y = 0; y < ySize; y++) {
-				Vector3 tilePos = new Vector3 (startX + (tileOffset.x * x), startY - (tileOffset.y * y));
+				Vector3 tilePos = new Vector3 (startX + (tileOffset.x * x), startY - (tileOffset.y * y), -1);
 
 				TileClass newTile = Instantiate(tile, tilePos, tile.transform.rotation);
 				newTile.transform.localScale = tileSize;
@@ -108,8 +114,8 @@ public class GameSetup : MonoBehaviour {
 				PawnClass p1Spawn = Instantiate(pawnSetup.startingPawns[i]);
 				PawnClass p2Spawn = Instantiate(pawnSetup.startingPawns[i]);
 
-				p1Spawn.ownership = PawnClass.Ownership.Player1;
-				p2Spawn.ownership = PawnClass.Ownership.Player2;
+				p1Spawn.ownership = Ownership.Player1;
+				p2Spawn.ownership = Ownership.Player2;
 
 				p1Pawns.Add (p1Spawn);
 				p2Pawns.Add (p2Spawn);

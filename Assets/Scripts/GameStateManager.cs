@@ -23,11 +23,9 @@ public class GameStateManager : MonoBehaviour {
 
 	// Turn state data
 	[System.NonSerialized]
-	public PawnClass.Ownership turn;
+	public Ownership turn;
 	public int turnCount, xSize, ySize;
 
-	[System.NonSerialized]
-	public int lastPlayer1Pawn, lastPlayer2Pawn; 
 
 	void Awake() {
 		if (instance == null) {
@@ -40,20 +38,42 @@ public class GameStateManager : MonoBehaviour {
 
 	public void BeginGame(bool isSinglePlayer) {
 		turnCount = 0;
-		turn = PawnClass.Ownership.Player1;
+		turn = Ownership.Player1;
+		DisplayTurnToken (turn);
 	}
 
+	// Increments the turn count, and flips the turn token
 	public void IncrementTurn() {
 		// Increment turn count and see whose turn it is
-		if (turnCount++ % 2 == 0) {
-			turn = PawnClass.Ownership.Player1;
+		if (++turnCount % 2 == 0) {
+			turn = Ownership.Player1;
 		} else {
-			turn = PawnClass.Ownership.Player2;
+			turn = Ownership.Player2;
 		}
+
+		DisplayTurnToken (turn);
 
 		foreach (ActiveEffectClass aec in activeEffects) {
 			aec.IncrementTurn ();
 		}
 	}
 
+	// Ends the players turn
+	public void EndTurn() {
+		GameSelections.activePlayerPawn = null;
+		GameSelections.hasMoved = false;
+
+		TouchManager.instance.ClearSelectionsAndUI ();
+
+		UIManager.instance.moveButton.interactable = true;
+		UIManager.instance.moveButtonText.text = "MOVE";
+
+		UIManager.instance.actionButton.interactable = true;
+
+		IncrementTurn ();
+	}
+
+	public void DisplayTurnToken(Ownership turn) {
+		UIManager.instance.opponentPawnName.text = turn + "'s turn";
+	}
 }

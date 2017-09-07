@@ -8,9 +8,10 @@ public class TouchManager : MonoBehaviour {
 	public GameObject selectionBorder;
 	public static TouchManager instance;
 	public int cameraOrthographicZoomSize;
+	public bool isZoomedIn;
 
 	private float worldViewLength, worldViewHeight, fieldMinX, fieldMaxX, fieldLength;
-	private bool isZoomedIn, isZooming, isCentering;
+	private bool isZooming, isCentering;
 
 	public Text xyPrintOut;
 
@@ -59,8 +60,8 @@ public class TouchManager : MonoBehaviour {
 
 			} else if (t.phase == TouchPhase.Moved) {
 				if (isMoving) {
-					CameraCenter (cameraOrigin.x + (Screen.width / 2) + (touchOrigin.x - t.position.x), 
-						cameraOrigin.y + (Screen.height / 2) + (touchOrigin.y - t.position.y));
+					CameraCenter (cameraOrigin.x + (Screen.width / 2) + ((touchOrigin.x - t.position.x) / 2), 
+						cameraOrigin.y + (Screen.height / 2) + ((touchOrigin.y - t.position.y) / 2));
 				} 
 				// Detect if user wants to move camera (only allow if zoomed in
 				else if (isZoomedIn && Mathf.Abs (t.position.x - touchOrigin.x) > (Screen.width / 100) &&
@@ -102,39 +103,12 @@ public class TouchManager : MonoBehaviour {
 				float touchDeltaMag = (t1.position - t2.position).magnitude;
 
 				// Find the difference in the distances between each frame.
-				float deltaMagnitudeDiff = zoomTouchOriginMagnitude - touchDeltaMag;
+				float deltaMagnitudeDiff = touchDeltaMag - zoomTouchOriginMagnitude;
 
-				if (deltaMagnitudeDiff > 0) {
+				if (deltaMagnitudeDiff > (Screen.height / 20)) {
 					ZoomToPoint (true, (t1Origin.x + t2Origin.x)/2, (t1Origin.y + t2Origin.y)/2);
-				} else {
+				} else if (deltaMagnitudeDiff < -(Screen.height / 40)) {
 					ZoomToPoint (false);
-				}
-			}
-
-			else if (t1.phase == TouchPhase.Ended) {
-				// Animate zoom out to center
-				if (isZoomedIn) {
-					ZoomToPoint (false);
-				} else {
-					// Animate zoom in to center location between 2 fingers
-
-					float centerX, centerY;
-
-					// Get center X value
-					if (t1.position.x < t2.position.x) {
-						centerX = t1.position.x - t2.position.x;
-					} else {
-						centerX = t2.position.x - t1.position.x;
-					}
-
-					// Get center y value
-					if (t1.position.y < t2.position.y) {
-						centerY = t1.position.y - t2.position.y;
-					} else {
-						centerY = t2.position.y - t1.position.y;
-					}
-
-					ZoomToPoint (true, centerX, centerY);
 				}
 			}
 		}
@@ -182,7 +156,7 @@ public class TouchManager : MonoBehaviour {
 
 			// Check zoomed in UI touch
 			if (UIManager.instance.actionBarUI.GetBool ("SlideIn") &&
-				xPosRatio < 0.23f) {
+				xPosRatio < 0.20f) {
 				print ("Zoomed in UI Touch");
 				return;
 			}
@@ -215,19 +189,25 @@ public class TouchManager : MonoBehaviour {
 
 			selectedTile.TileTap ();
 			selectionBorder.SetActive (true);
-			selectionBorder.transform.position = new Vector3 (selectedTile.transform.position.x, selectedTile.transform.position.y, -1);
+			selectionBorder.transform.position = new Vector3 (selectedTile.transform.position.x, selectedTile.transform.position.y, -10);
 
-		} else { // Tapping out of bounds //
-			
-			// Remove all UI
-			UIManager.instance.ClearAllActiveUI ();
-
-			// Deselect tile
-			TileClass.selectedTile = null;
-
-			// Remove selection border
-			selectionBorder.SetActive (false);
+		} else { // Tapping out of bounds
+			ClearSelectionsAndUI ();
 		}
+	}
+
+	/// <summary>
+	/// Clears tile selection and UI, removes selection border.
+	/// </summary>
+	public void ClearSelectionsAndUI () {
+		// Remove all UI
+		UIManager.instance.ClearAllActiveUI ();
+
+		// Deselect tile
+		GameSelections.selectedTile = null;
+
+		// Remove selection border
+		selectionBorder.SetActive (false);
 	}
 
 	// Takes 2 grid coordinates and converts them to world space coordinates
@@ -274,7 +254,7 @@ public class TouchManager : MonoBehaviour {
 				yield return new WaitForSeconds (0.001f);
 			}
 			Camera.main.orthographicSize = Screen.height / 4; // Ensure the camera has correct orthographic size after animation
-		} else if (!zoomIn) {
+		} else if (!zoomIn && isZoomedIn) {
 			isZoomedIn = false;
 
 			for (int i = 0; i < incrementCount; i++) {
@@ -301,6 +281,12 @@ public class TouchManager : MonoBehaviour {
 			x = fieldMinX;
 		} else if (x > fieldMaxX) {
 			x = fieldMaxX;
+		}
+
+		if (y < 0) {
+			y = 0;
+		} else if (y > worldViewHeight) {
+			y = worldViewHeight;
 		}
 
 		// Get position to move camera to
@@ -348,6 +334,12 @@ public class TouchManager : MonoBehaviour {
 			x = fieldMinX;
 		} else if (x > fieldMaxX) {
 			x = fieldMaxX;
+		}
+
+		if (y < 0) {
+			y = 0;
+		} else if (y > worldViewHeight) {
+			y = worldViewHeight;
 		}
 
 		x = x - (Screen.width /2);

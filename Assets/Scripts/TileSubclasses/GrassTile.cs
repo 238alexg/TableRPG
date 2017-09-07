@@ -11,9 +11,4 @@ public class GrassTile : WalkableTile {
 	public override void Select() {
 		base.Select ();
 	}
-
-	public override void AttemptInteration ()
-	{
-		base.AttemptInteration ();
-	}
 }

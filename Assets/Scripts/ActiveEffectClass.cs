@@ -8,6 +8,8 @@ public class ActiveEffectClass : MonoBehaviour {
 	public byte turnDuration;
 	private byte turnsLeft;
 
+	private Ownership turnStarted;
+
 	public virtual void IncrementTurn() {
 		if (turnDuration-- < 1) {
 			Destroy (this);
