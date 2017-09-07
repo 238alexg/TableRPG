@@ -7,14 +7,17 @@ public class UIManager : MonoBehaviour {
 
 	public static UIManager instance;
 
-	public Animator actionBarUI, abilitiesBarUI;
+	public Animator actionBarUI, abilitiesBarUI, friendlyStatsUI;
 
 	public Text actionBarPawnName, opponentPawnName;
 
-	public Image actionBarPawnImage;
+	public Image actionBarPawnImage, friendlyStatImage;
 
-	public Button moveButton, actionButton, endTurnButton, action1Button, action2Button, action3Button, backButton;
-	public Text moveButtonText, actionButtonText, endTurnButtonText, action1ButtonText, action2ButtonText, action3ButtonText;
+	public Button moveButton, actionButton, friendlyStatButton;
+	public Text moveButtonText, friendlyStatPawnName, friendlyStatText;
+
+	public List<Button> actionButtons;
+	public List<Text> actionButtonTexts;
 
 	private List<GameObject> activeUI = new List<GameObject>();
 
@@ -34,24 +37,40 @@ public class UIManager : MonoBehaviour {
 		actionBarUI.SetBool ("SlideUp", true);
 		abilitiesBarUI.SetBool ("SlideIn", true);
 
-		PawnClass pawn = GameSelections.selectedTile.curPawn;
+		PawnClass pawn = GameSelections.activePlayerPawn;
 
-		action1ButtonText.text = pawn.actions [0].actionName;
+		actionButtonTexts[0].text = pawn.actions [0].actionName;
 //		action2ButtonText.text = pawn.actions [1].actionName;
 //		action3ButtonText.text = pawn.actions [2].actionName;
 
-		action1Button.onClick.AddListener (pawn.actions [0].OnButtonPress);
+		actionButtons[0].onClick.AddListener (pawn.actions [0].OnButtonPress);
 
-		if (pawn.level > PawnClass.Level.Novice) {
-			action2Button.interactable = true;
-		} else if (pawn.level > PawnClass.Level.Veteran) {
-			action3Button.interactable = true;
-		}
+//		if (pawn.level > PawnClass.Level.Novice) {
+//			action2Button.interactable = true;
+//		} else if (pawn.level > PawnClass.Level.Veteran) {
+//			action3Button.interactable = true;
+//		}
 	}
 
 	public void ActionBackButtonPress() {
 		actionBarUI.SetBool ("SlideUp", false);
 		abilitiesBarUI.SetBool ("SlideIn", false);
+	}
+
+	public void StatsButtonPress() {
+		PawnClass pawn = GameSelections.activePlayerPawn;
+
+		friendlyStatText.text = pawn.GetPawnStats ();
+		friendlyStatPawnName.text = pawn.pawnName;
+		friendlyStatImage.sprite = pawn.UISprite;
+
+		actionBarUI.SetBool ("SlideDown", true);
+		friendlyStatsUI.SetBool ("SlideIn", true);
+	}
+
+	public void StatsBackButtonPress() {
+		actionBarUI.SetBool ("SlideDown", false);
+		friendlyStatsUI.SetBool ("SlideIn", false);
 	}
 		
 	// Slide Action Bar UI in/out

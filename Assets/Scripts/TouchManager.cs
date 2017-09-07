@@ -157,7 +157,7 @@ public class TouchManager : MonoBehaviour {
 			// Check zoomed in UI touch
 			if (UIManager.instance.actionBarUI.GetBool ("SlideIn") &&
 				xPosRatio < 0.20f) {
-				print ("Zoomed in UI Touch");
+//				print ("Zoomed in UI Touch");
 				return;
 			}
 
@@ -173,7 +173,7 @@ public class TouchManager : MonoBehaviour {
 			// Check zoomed out UI touch
 			if (UIManager.instance.actionBarUI.GetBool ("SlideIn") &&
 			    xTouchWorldPos < 0.23f * worldViewLength) {
-				print ("Zoomed out UI Touch");
+//				print ("Zoomed out UI Touch");
 				return;
 			}
 		}

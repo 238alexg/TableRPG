@@ -14,6 +14,7 @@ public class PawnClass : MonoBehaviour {
 	public int enemiesKilled, veteranKillsNeeded, masterKillsNeeded;
 
 	public List<ActionClass> actions; // TODO: Implement the ActionClass class!
+	public List<System.Type> tilesAllowedToWalkOver = new List<System.Type>() { typeof(WalkableTile) };
 
 	// Turn-dynamic stats
 	[System.NonSerialized]
@@ -23,7 +24,7 @@ public class PawnClass : MonoBehaviour {
 	[System.NonSerialized]
 	public Ownership ownership;
 
-	void Start() {
+	protected virtual void Start() {
 		health = maxHealth;
 	}
 
@@ -39,12 +40,38 @@ public class PawnClass : MonoBehaviour {
 	public virtual void HurtPawn(float damage, PawnClass attacker) {
 		health -= damage;
 
-		print (pawnName + " has " + health +  " health left");
-
 		if (health <= 0) {
 			KillPawn ();
 			attacker.UpdateKillCount (this);
 		}
+	}
+
+	// TODO: Use modifiers to see the real value of stats with added abilities/effects, etc.
+	/// <summary>
+	/// Returns a string containing all the basic stat information of the pawn.
+	/// </summary>
+	public virtual string GetPawnStats() {
+		string healthLine = "Health: " + (int)health + " / " + (int)maxHealth + System.Environment.NewLine;
+		string atkLine = "Atk: " + (int)attack + System.Environment.NewLine;
+		string defLine = "Def: " + (int)defense + System.Environment.NewLine;
+		string abilitiesLine = "Abilities: " + System.Environment.NewLine;
+		string actionsLine = "Actions: " + System.Environment.NewLine;
+
+		foreach (ActionClass ac in actions) {
+			if (ac is AttackAction) {
+				abilitiesLine += ac.actionName + System.Environment.NewLine;
+			} else {
+				abilitiesLine += ac.actionName + System.Environment.NewLine;
+			}
+		}
+
+		foreach (System.Type t in tilesAllowedToWalkOver) {
+			if (t != typeof(WalkableTile)) {
+				abilitiesLine += t.ToString () + " Walking" + System.Environment.NewLine;
+			}
+		}
+
+		return (healthLine + atkLine + defLine + actionsLine + abilitiesLine);
 	}
 
 	/// <summary>

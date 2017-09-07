@@ -62,11 +62,9 @@ public class GameStateManager : MonoBehaviour {
 	public void EndTurn() {
 		GameSelections.activePlayerPawn = null;
 		GameSelections.hasMoved = false;
+		GameSelections.curAction = null;
 
 		TouchManager.instance.ClearSelectionsAndUI ();
-
-		UIManager.instance.moveButton.interactable = true;
-		UIManager.instance.moveButtonText.text = "MOVE";
 
 		UIManager.instance.actionButton.interactable = true;
 

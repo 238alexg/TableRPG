@@ -13,7 +13,6 @@ public class GameSelections : MonoBehaviour {
 	public static PawnClass activePlayerPawn;
 	public static byte pawnMovesLeft;
 	public static bool hasMoved;
-	public static bool hasCompletedTurn;
 	public static ActionClass curAction;
 	public static TileClass selectedTile;
 }
