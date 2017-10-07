@@ -5,117 +5,112 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour {
 
-	public static UIManager instance;
+	public static UIManager Instance;
 
-	public Animator actionBarUI, abilitiesBarUI, friendlyStatsUI;
-
-	public Text actionBarPawnName, opponentPawnName;
-
-	public Image actionBarPawnImage, friendlyStatImage;
-
-	public Button moveButton, actionButton, friendlyStatButton;
-	public Text moveButtonText, friendlyStatPawnName, friendlyStatText;
-
-	public List<Button> actionButtons;
-	public List<Text> actionButtonTexts;
-
-	private List<GameObject> activeUI = new List<GameObject>();
+    [Header("Scroll Bar UI")]
+    public GameObject UIRoot;
+	public GameObject MenuBar;
+    public GameObject ScrollbarContent;
+    public List<UIBarButton> UIBarButtons;
 
 	void Awake() {
-		if (instance == null) {
-			instance = this;
+		if (Instance == null) {
+			Instance = this;
 		} else {
 			Destroy (this);
 		}
 	}
 
-	/// <summary>
-	/// Called when a user presses the action button with a pawn selected.
-	/// </summary>
-	public void ActionButtonPress() {
+    void Start() {
+        for (int i = 0; i < UIBarButtons.Count; i++) {
+            UIBarButtons[i].transform.SetParent(ScrollbarContent.transform);
+        }
+    }
 
-		actionBarUI.SetBool ("SlideUp", true);
-		abilitiesBarUI.SetBool ("SlideIn", true);
-
-		PawnClass pawn = GameSelections.activePlayerPawn;
-
-		actionButtonTexts[0].text = pawn.actions [0].actionName;
-//		action2ButtonText.text = pawn.actions [1].actionName;
-//		action3ButtonText.text = pawn.actions [2].actionName;
-
-		actionButtons[0].onClick.AddListener (pawn.actions [0].OnButtonPress);
-
-//		if (pawn.level > PawnClass.Level.Novice) {
-//			action2Button.interactable = true;
-//		} else if (pawn.level > PawnClass.Level.Veteran) {
-//			action3Button.interactable = true;
-//		}
-	}
-
-	public void ActionBackButtonPress() {
-		actionBarUI.SetBool ("SlideUp", false);
-		abilitiesBarUI.SetBool ("SlideIn", false);
+    /// <summary>
+    /// Called when a user presses the action button with a pawn selected.
+    /// </summary>
+    public void ActionButtonPress() {
+        PawnClass pawn = GameSelections.activePlayerPawn;
 	}
 
 	public void StatsButtonPress() {
 		PawnClass pawn = GameSelections.activePlayerPawn;
-
-		friendlyStatText.text = pawn.GetPawnStats ();
-		friendlyStatPawnName.text = pawn.pawnName;
-		friendlyStatImage.sprite = pawn.UISprite;
-
-		actionBarUI.SetBool ("SlideDown", true);
-		friendlyStatsUI.SetBool ("SlideIn", true);
 	}
+}
 
-	public void StatsBackButtonPress() {
-		actionBarUI.SetBool ("SlideDown", false);
-		friendlyStatsUI.SetBool ("SlideIn", false);
-	}
-		
-	// Slide Action Bar UI in/out
-	public void SlideActionBar(bool slideIn, PawnClass pawn = null) {
-		if (actionBarUI.GetBool ("SlideIn") && slideIn) {
-			// Just replace values in action bar
-			// Do not reanimate action bar slide
-			loadPawnIntoActionBar (pawn);
-		} else if (slideIn) {
-			loadPawnIntoActionBar (pawn);
-			moveButtonText.text = GameSelections.hasMoved ? "DONE" : "MOVE";
-			moveButton.interactable = !GameSelections.hasMoved;
-			actionBarUI.SetBool ("SlideIn", true);
-			activeUI.Add (actionBarUI.gameObject);
-		} else {
-			actionBarUI.SetBool ("SlideIn", false);
-			activeUI.Remove (actionBarUI.gameObject);
-		}
-	}
+[System.Serializable]
+public class UIBarButton : MonoBehaviour {
+    public ButtonType Type;
+    public Button Button;
+    public Image Background;
+    public Color32 BackgroundColor;
+    public Text Text;
 
-	// Loads pawn info into the UI
-	public void loadPawnIntoUI(PawnClass pawn) {
-		if (GameStateManager.instance.turn == pawn.ownership) {
-			actionBarPawnName.text = pawn.pawnName;
-		} else {
-			actionBarPawnName.text = pawn.pawnName;
-		}
-	}
+    public void Initialize(ButtonType Type, Button b, Image bkgd, Color32 bkgdColor, Text t, GameObject parent)
+    {
+        Button = b;
+        Background = bkgd;
+        BackgroundColor = bkgdColor;
+        Text = t;
 
-	// Clears all active UI
-	public void ClearAllActiveUI() {
-		foreach (GameObject ui in activeUI) {
-			Animator anim = ui.GetComponent <Animator> ();
+        Background.color = BackgroundColor;
+        InitButtonFunctionality();
+    }
 
-			if (anim == null) {
-				Debug.Log (">> UI Animator not present!");
-			} else {
-				anim.SetBool ("SlideIn", false);
-			}
-		}
-		activeUI.Clear ();
-	}
+    public virtual void InitButtonFunctionality() {
 
-	private void loadPawnIntoActionBar(PawnClass pawn) {
-		actionBarPawnName.text = pawn.pawnName;
-		actionBarPawnImage.sprite = pawn.UISprite;
-	}
+        UnityEngine.Events.UnityAction UAction;
+
+        UAction = MoveButtonPress;
+
+        UAction = (this.Type == ButtonType.MoveButton) ? (UnityEngine.Events.UnityAction)MoveButtonPress : ActionButtonPress;
+
+        if (Type == ButtonType.MoveButton) {
+            Button.onClick.AddListener(MoveButtonPress);
+        } else if (Type == ButtonType.ActionButton) {
+            Button.onClick.AddListener(MoveButtonPress);
+        } else if (Type == ButtonType.SettingsButton) {
+            
+        }
+    }
+
+    void CardButtonPress() {
+        Debug.Log("Move button press!");
+    }
+
+    void PawnButtonPress() {
+        Debug.Log("Move button press!");
+    }
+
+    void ShopButtonPress() {
+        Debug.Log("Move button press!");
+    }
+
+    void SettingsButtonPress() {
+        Debug.Log("Move button press!");
+    }
+
+    void EndTurnButtonPress() {
+        Debug.Log("Move button press!");
+    }
+
+    void StatsButtonPress() {
+        Debug.Log("Move button press!");
+    }
+
+    void MoveButtonPress() {
+        Debug.Log("Move button press!");
+    }
+
+    void ActionButtonPress() {
+        Debug.Log("Move button press!");
+    }
+
+    public enum ButtonType {
+        MoveButton,
+        ActionButton,
+        StatsButton,
+        SettingsButton
+    }
 }

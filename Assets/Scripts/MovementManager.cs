@@ -39,7 +39,6 @@ public class MovementManager : MonoBehaviour {
 
 		// User has already pressed move
 		if (GameSelections.hasMoved) {
-			UIManager.instance.moveButton.interactable = false;
 			return;
 		} 
 
@@ -51,8 +50,8 @@ public class MovementManager : MonoBehaviour {
 		isMovingPawn = true;
 
 		// Show movement UI
-		Vector2 zoomCoord = TouchManager.instance.GridToScreenCoordinates (startTile.curPawn.x, startTile.curPawn.y);
-		TouchManager.instance.ZoomToPoint (true, zoomCoord.x, zoomCoord.y);
+		Vector2 zoomCoord = TouchManager.Instance.GridToScreenCoordinates (startTile.curPawn.x, startTile.curPawn.y);
+		TouchManager.Instance.ZoomToPoint (true, zoomCoord.x, zoomCoord.y);
 
 		// Set origin tile (where pawn is starting from)
 		walkableTileOption origin = new walkableTileOption(
@@ -95,7 +94,8 @@ public class MovementManager : MonoBehaviour {
 
 				walkableTileOptions.Add (wto);
 				checkWalkableSides (wto);
-			} else if (wto.moveCount < moveCount) {
+			} 
+            else if (wto.moveCount < moveCount) {
 				wto.moveCount = moveCount;
 				wto.precedingTile = precedingTile;
 				checkWalkableSides (wto);
@@ -130,8 +130,6 @@ public class MovementManager : MonoBehaviour {
 	/// <returns>Yield returns each time a movement from one tile has completed</returns>
 	/// <param name="destTile">Destination tile.</param>
 	public IEnumerator MovePawn(TileClass destTile) {
-
-		UIManager.instance.moveButtonText.text = "DONE";
 
 		// Get pawn, destination, and path
 		PawnClass pawn = GameSelections.activePlayerPawn;
@@ -177,7 +175,6 @@ public class MovementManager : MonoBehaviour {
 			}
 		} else {
 			isMovingPawn = false;
-			UIManager.instance.moveButton.interactable = false;
 		}
 	}
 
@@ -198,11 +195,6 @@ public class MovementManager : MonoBehaviour {
 			curPos = Vector3.Lerp(startPos, endPos, fracJourney);
 
 			pawn.position = curPos;
-
-			if (TouchManager.instance.isZoomedIn) {
-				curPos.z = -100;
-				Camera.main.transform.position = curPos;
-			}
 
 			fracJourney += 0.04f;
 

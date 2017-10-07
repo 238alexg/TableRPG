@@ -36,7 +36,7 @@ public class GameStateManager : MonoBehaviour {
 		Application.targetFrameRate = 60;
 	}
 
-	public void BeginGame(bool isSinglePlayer) {
+	public void BeginGame() {
 		turnCount = 0;
 		turn = Ownership.Player1;
 		DisplayTurnToken (turn);
@@ -64,14 +64,10 @@ public class GameStateManager : MonoBehaviour {
 		GameSelections.hasMoved = false;
 		GameSelections.curAction = null;
 
-		TouchManager.instance.ClearSelectionsAndUI ();
-
-		UIManager.instance.actionButton.interactable = true;
-
+		TouchManager.Instance.ClearSelectionsAndUI ();
 		IncrementTurn ();
 	}
 
 	public void DisplayTurnToken(Ownership turn) {
-		UIManager.instance.opponentPawnName.text = turn + "'s turn";
 	}
 }

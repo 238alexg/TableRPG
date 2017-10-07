@@ -17,13 +17,16 @@ public class ActionClass : MonoBehaviour {
 
 	public virtual void OnButtonPress() {
 		GameSelections.curAction = this;
-		UIManager.instance.moveButton.interactable = false;
-		UIManager.instance.moveButtonText.text = "DONE";
 		print("Action button pressed!");
 	}
 
 	public virtual void OnExecution(TileClass tile) {
 		print("Action executed on " + tile.tileName);
+
+		GameSelections.hasMoved = true;
+		GameSelections.pawnMovesLeft = 0;
+		GameSelections.hasCompletedTurn = true;
+
 	}
 
 }

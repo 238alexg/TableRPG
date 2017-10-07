@@ -36,7 +36,7 @@ Transform:
   m_GameObject: {fileID: 1181590588120548}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5, y: 5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -53,7 +53,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileName: Grass Tile 1
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300062, guid: 85e4fe3752cd34d9aa3f772bb80878d4, type: 3}
   curPawn: {fileID: 0}
 --- !u!212 &212999256354707254
 SpriteRenderer:
@@ -91,7 +91,7 @@ SpriteRenderer:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
-  m_DrawMode: 0
+  m_DrawMode: 1
   m_Size: {x: 0.16, y: 0.16}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0

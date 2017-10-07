@@ -12,7 +12,7 @@ public class GameSelections : MonoBehaviour {
 	[System.NonSerialized]
 	public static PawnClass activePlayerPawn;
 	public static byte pawnMovesLeft;
-	public static bool hasMoved;
+	public static bool hasMoved, hasCompletedTurn;
 	public static ActionClass curAction;
 	public static TileClass selectedTile;
 }

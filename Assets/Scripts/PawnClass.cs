@@ -29,7 +29,6 @@ public class PawnClass : MonoBehaviour {
 	}
 
 	public void SelectPawn() {
-		UIManager.instance.loadPawnIntoUI (this);
 		GameSelections.activePlayerPawn = this;
 	}
 

@@ -13,7 +13,20 @@ public class GameSetup : MonoBehaviour {
 
 	public static GameSetup instance;
 
-	private int xSize, ySize;
+    public float OrthographicSize {
+        get { return Camera.main.orthographicSize; }
+        set { Camera.main.orthographicSize = value; }
+    }
+
+	public float HeightToWidthRatio {
+		get { return Screen.height / Screen.width; }
+	}
+
+    Vector2 spriteSize;
+    int xSize, ySize;
+    const int SmallMapSize = 0, MediumMapSize = 1, LargeMapSize = 2;
+    const int DefaultPawnSetup = 0;
+    const int PPU = 16;
 
 	[System.NonSerialized]
 	public float horzExtent, xyGridRatio;
@@ -21,31 +34,31 @@ public class GameSetup : MonoBehaviour {
 	void Awake() {
 		if (GameSetup.instance == null) {
 			GameSetup.instance = this;
-			Camera.main.orthographicSize = Screen.height / 2;
 		} else {
 			Destroy (this);
 		}
 	}
 
 	void Start () {
-		PredefinedMapSize mapSize = mapSizes [1];
-		startingPawnSetup pawnSetup = pawnSetups [0];
-		bool isSinglePlayer = false;
-
-		SetUpGame (mapSize, pawnSetup, isSinglePlayer);
+		PredefinedMapSize mapSize = mapSizes [SmallMapSize];
+		startingPawnSetup pawnSetup = pawnSetups [DefaultPawnSetup];
+		SetUpGame (mapSize, pawnSetup);
 	}
 
 
-	public void SetUpGame (PredefinedMapSize mapSize, startingPawnSetup pawnSetup, bool isSinglePlayer) {
+	public void SetUpGame (PredefinedMapSize mapSize, startingPawnSetup pawnSetup) {
+
+        spriteSize = tile.GetComponent<SpriteRenderer>().size;
 
 		// Create the board and tiles
 		CreateBoard (mapSize);
 
 		// Create starting pawns on both sides
-		CreateStartingPawns (pawnSetup, isSinglePlayer);
+		CreateStartingPawns (pawnSetup);
 
-		// Begin the game
-		GameStateManager.instance.BeginGame (isSinglePlayer);
+        InitializePlayerCamera();
+
+        GameStateManager.instance.BeginGame ();
 	}
 
 	/// <summary>
@@ -59,46 +72,26 @@ public class GameSetup : MonoBehaviour {
 		ySize = mapSize.y;
 
 		GameStateManager.instance.tiles = new TileClass[xSize, ySize];
-
-		xyGridRatio = (float)xSize / (float)ySize;  // Ratio of grid, width:height
-		float vertExtent = Camera.main.orthographicSize;
-
-		// Get new ratio of horz extent: world space of camera height *  grid width/height
-		horzExtent = vertExtent * xSize / ySize;
-
-		// Get size of tile sprite
-		Vector2 tileSpriteSize = tile.GetComponent <SpriteRenderer> ().size;
-
-		// Get offset for each tile
-		Vector3 tileOffset = new Vector3((horzExtent * 2) / xSize, (vertExtent * 2) / ySize);
-
-		// Get localScale for each tile
-		Vector3 tileSize = new Vector3 (tileOffset.x / tileSpriteSize.x, tileOffset.y / tileSpriteSize.y);
-
-		Vector3 cameraPos = transform.position;
-
-		// Get the upper left hand corner
-		float startX = cameraPos.x - horzExtent;
-		float startY = cameraPos.y + vertExtent;
+        Vector2 scale = Vector2.one;
+        scale.x *= 1 / spriteSize.x;
+        scale.y *= 1 / spriteSize.y;
 
 		// Make a x by y grid of tiles
 		for (int x = 0; x < xSize; x++) {
 			for (int y = 0; y < ySize; y++) {
-				Vector3 tilePos = new Vector3 (startX + (tileOffset.x * x), startY - (tileOffset.y * y), -1);
-
+                Vector3 tilePos = new Vector3(x, ySize - y);
 				TileClass newTile = Instantiate(tile, tilePos, tile.transform.rotation);
-				newTile.transform.localScale = tileSize;
+                newTile.transform.localScale = scale;
 				GameStateManager.instance.tiles[x, y] = newTile;
 			}
 		}
 
 		GameStateManager.instance.xSize = xSize;
 		GameStateManager.instance.ySize = ySize;
-		TouchManager.instance.UpdateFieldMinMax ();
 	}
 
 	// Creates starting pawns for both players
-	public void CreateStartingPawns(startingPawnSetup pawnSetup, bool isSinglePlayer) {
+	public void CreateStartingPawns(startingPawnSetup pawnSetup) {
 		List<PawnClass> p1Pawns = new List<PawnClass> ();
 		List<PawnClass> p2Pawns = new List<PawnClass> ();
 
@@ -122,22 +115,28 @@ public class GameSetup : MonoBehaviour {
 			}
 		}
 
-		int yOffset = (ySize - p1Pawns.Count) / 2;
+        int xOffset = (xSize - p1Pawns.Count) / 2;
 
 		for (int i = 0; i < p1Pawns.Count; i++) {
-			WalkableTile p1Pos = (WalkableTile)GameStateManager.instance.tiles [0, i + yOffset];
-			WalkableTile p2Pos = (WalkableTile)GameStateManager.instance.tiles [xSize - 1, ySize - (i + yOffset) - 1];
+			WalkableTile p1Pos = (WalkableTile)GameStateManager.instance.tiles [i + xOffset, 0];
+            WalkableTile p2Pos = (WalkableTile)GameStateManager.instance.tiles [xSize - (i + xOffset) - 1, ySize - 1];
 
 			// Update pawn location information
-			p1Pawns [i].x = 0;
-			p1Pawns [i].y = i + yOffset;
-			p2Pawns [i].x = xSize - 1;
-			p2Pawns [i].y = ySize - (i + yOffset) - 1;
+            p1Pawns [i].x = i + xOffset;
+            p1Pawns [i].y = 0;
+
+            p2Pawns [i].y = ySize - 1;
+            p2Pawns [i].x = xSize - (i + xOffset) - 1;
 
 			p1Pos.PlacePawn (p1Pawns[i]);
 			p2Pos.PlacePawn (p2Pawns[i]);
 		}
 	}
+
+    void InitializePlayerCamera() {
+        OrthographicSize = 0.25f * (float)(Screen.height / PPU);
+        Camera.main.transform.position = new Vector3((float)xSize / 2, (float)ySize / 2, -100);
+    }
 
 	[System.Serializable]
 	public struct PredefinedMapSize {
