@@ -79,6 +79,8 @@ public class GameSetup : MonoBehaviour {
                 Vector3 tilePos = new Vector3(x * SpriteSize, (ySize - y) * SpriteSize);
                 TileContainer newTile = Instantiate(TileContainerPrefab, tilePos, TileContainerPrefab.transform.rotation);
                 newTile.transform.localScale = PixelPerfectScale;
+                newTile.x = x;
+                newTile.y = y;
 				GameStateManager.instance.tiles[x, y] = newTile;
 			}
 		}
@@ -118,8 +120,8 @@ public class GameSetup : MonoBehaviour {
         int xOffset = (xSize - p1Pawns.Count) / 2;
 
 		for (int i = 0; i < p1Pawns.Count; i++) {
-            WalkableTile p1Pos = (WalkableTile)GameStateManager.instance.tiles [i + xOffset, 0].Tile;
-            WalkableTile p2Pos = (WalkableTile)GameStateManager.instance.tiles [xSize - (i + xOffset) - 1, ySize - 1].Tile;
+            TileContainer p1Pos = GameStateManager.instance.tiles [i + xOffset, 0];
+            TileContainer p2Pos = GameStateManager.instance.tiles [xSize - (i + xOffset) - 1, ySize - 1];
 
 			// Update pawn location information
             p1Pawns [i].x = i + xOffset;

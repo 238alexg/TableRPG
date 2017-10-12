@@ -29,7 +29,7 @@ public class PawnClass : MonoBehaviour {
 	}
 
 	public void SelectPawn() {
-		GameSelections.activePlayerPawn = this;
+		GameSelections.ActivePlayerPawn = this;
         UIManager.Instance.LoadSelectedPawn(this, ownership == GameStateManager.instance.turn);
         Debug.Log("Selected " + name);
 	}

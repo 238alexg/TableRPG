@@ -61,9 +61,9 @@ public class GameStateManager : MonoBehaviour {
 
 	// Ends the players turn
 	public void EndTurn() {
-		GameSelections.activePlayerPawn = null;
-		GameSelections.hasMoved = false;
-		GameSelections.curAction = null;
+		GameSelections.ActivePlayerPawn = null;
+		GameSelections.HasMoved = false;
+		GameSelections.CurAction = null;
 
 		TouchManager.Instance.ClearSelectionsAndUI ();
 		IncrementTurn ();

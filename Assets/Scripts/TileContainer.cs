@@ -8,12 +8,19 @@ public class TileContainer : MonoBehaviour {
     public PawnClass Pawn;
     public SpriteRenderer SpriteRen;
 
+    public int x, y;
+
     public static TileContainer SelectedTile;
 
     /// <summary>
     /// Performs selections necessary for when a user taps this tile
     /// </summary>
     public void OnTap() {
+		if (GameSelections.SelectedTile != this)
+		{
+			GameSelections.SelectedTile = this;
+		}
+
         StartCoroutine(DimSelection());
 
         Tile.Select();
@@ -23,13 +30,13 @@ public class TileContainer : MonoBehaviour {
         }
 
 		// Check for existing actions including tile
-		if (GameSelections.curAction != null)
+		if (GameSelections.CurAction != null)
 		{
-			if (GameSelections.curAction.tileOptions.Contains(this))
+			if (GameSelections.CurAction.tileOptions.Contains(this))
 			{
-				GameSelections.curAction.OnExecution(this);
+				GameSelections.CurAction.OnExecution(this);
 				TouchManager.Instance.ClearSelectionsAndUI();
-				TouchManager.Instance.ZoomToPoint(false);
+                TouchManager.Instance.MoveCameraToPoint();
 			}
 			// User taps outside action area, do nothing
 			else
@@ -57,7 +64,7 @@ public class TileContainer : MonoBehaviour {
             if (Pawn.ownership == GameStateManager.instance.turn)
 			{
 
-                if (GameSelections.hasMoved || Pawn == GameSelections.activePlayerPawn)
+                if (GameSelections.HasMoved || Pawn == GameSelections.ActivePlayerPawn)
 				{
 
 				}
@@ -79,12 +86,6 @@ public class TileContainer : MonoBehaviour {
 			// Select tile, clear UI
 			TouchManager.Instance.ClearSelectionsAndUI();
 		}
-
-		if (GameSelections.selectedTile != this)
-		{
-			GameSelections.selectedTile = this;
-		}
-        StartCoroutine (DimSelection ());
 	}
 
 	// Dims the selected tile to show it has been selected
@@ -121,5 +122,12 @@ public class TileContainer : MonoBehaviour {
 			SpriteRen.color = dimColor;
             yield return null;
 		}
+	}
+
+	// Called when a pawn is spawned on this tile
+	public virtual void PlacePawn(PawnClass placedPawn)
+	{
+        Pawn = placedPawn;
+        Pawn.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - 1);
 	}
 }

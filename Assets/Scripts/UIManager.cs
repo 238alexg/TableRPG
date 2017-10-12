@@ -35,12 +35,12 @@ public class UIManager : MonoBehaviour {
     /// </summary>
     public void ActionButtonPress() 
     {
-        PawnClass pawn = GameSelections.activePlayerPawn;
+        PawnClass pawn = GameSelections.ActivePlayerPawn;
 	}
 
 	public void StatsButtonPress() 
     {
-		PawnClass pawn = GameSelections.activePlayerPawn;
+		PawnClass pawn = GameSelections.ActivePlayerPawn;
 	}
 
     public void LoadSelectedPawn(PawnClass pawn, bool isAlly)
@@ -70,6 +70,8 @@ public class UIManager : MonoBehaviour {
         // Stats and End turn buttons
 		CurrentAvailableButtons.Add(Instantiate(FindButtonPrefab(UIBarButton.ButtonType.Stats), Vector3.one, Quaternion.identity, ScrollbarContent));
 		CurrentAvailableButtons.Add(Instantiate(FindButtonPrefab(UIBarButton.ButtonType.EndTurn), Vector3.one, Quaternion.identity, ScrollbarContent));
+
+        InitializeButtonFunctions();
     }
 
     public void DeselectPawn() 
@@ -82,6 +84,8 @@ public class UIManager : MonoBehaviour {
         CurrentAvailableButtons.Add(Instantiate(FindButtonPrefab(UIBarButton.ButtonType.Settings), Vector3.one, Quaternion.identity, ScrollbarContent));
         CurrentAvailableButtons.Add(Instantiate(FindButtonPrefab(UIBarButton.ButtonType.EndTurn), Vector3.one, Quaternion.identity, ScrollbarContent));
 
+        InitializeButtonFunctions();
+
         UIState = UISelectionState.NoSelection;
     }
 
@@ -92,6 +96,14 @@ public class UIManager : MonoBehaviour {
             Destroy(ScrollbarContent.GetChild(i).gameObject);
         }
         CurrentAvailableButtons.Clear();
+    }
+
+    public void InitializeButtonFunctions() 
+    {
+        for (int i = 0; i < CurrentAvailableButtons.Count; i++) 
+        {
+            CurrentAvailableButtons[i].InitButtonFunctionality();
+        }
     }
 
     UIBarButton FindButtonPrefab(UIBarButton.ButtonType bt) 

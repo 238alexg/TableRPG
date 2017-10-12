@@ -15,7 +15,7 @@ public class TouchManager : MonoBehaviour {
 	private Vector2 touchOrigin, t1Origin, t2Origin;
 	private float zoomTouchOriginMagnitude;
 	private bool isMoving;
-	private Vector3 cameraOrigin;
+    private Vector3 CameraOrigin;
 
 	// Animation increment count
 	int incrementCount = 25;
@@ -34,82 +34,46 @@ public class TouchManager : MonoBehaviour {
 		if (Input.touchCount == 1) {
 			
 			Touch t = Input.GetTouch (0);
+            switch (t.phase)
+            {
+                case TouchPhase.Began:
+                    touchOrigin = Input.GetTouch(0).position;
+                    break;
+                case TouchPhase.Moved:
+                    if (isMoving)
+                    {
+                        CameraCenter(CameraOrigin.x + (Screen.width / 2) + ((touchOrigin.x - t.position.x) / 2),
+                            CameraOrigin.y + (Screen.height / 2) + ((touchOrigin.y - t.position.y) / 2));
+                    }
+                    // Detect if user wants to move camera
+                    else if (Mathf.Abs(t.position.x - touchOrigin.x) > (Screen.width / 100) &&
+                        Mathf.Abs(t.position.y - touchOrigin.y) > (Screen.height / 100))
+                    {
+                        isMoving = true;
+                        CameraOrigin = Camera.main.transform.position;
+                    }
 
-			// Save single touch origin
-			if (t.phase == TouchPhase.Began) {
-				touchOrigin = Input.GetTouch (0).position;
-
-			} else if (t.phase == TouchPhase.Moved) {
-				if (isMoving) {
-					CameraCenter (cameraOrigin.x + (Screen.width / 2) + ((touchOrigin.x - t.position.x) / 2), 
-						cameraOrigin.y + (Screen.height / 2) + ((touchOrigin.y - t.position.y) / 2));
-				} 
-				// Detect if user wants to move camera
-				else if (Mathf.Abs (t.position.x - touchOrigin.x) > (Screen.width / 100) &&
-					Mathf.Abs (t.position.y - touchOrigin.y) > (Screen.height / 100)) {
-					isMoving = true;
-					cameraOrigin = Camera.main.transform.position;
-				} 
-			} else if (t.phase == TouchPhase.Ended) {
-				if (!isMoving && Mathf.Abs (t.position.x - touchOrigin.x) < (Screen.width / 100) &&
-				    Mathf.Abs (t.position.y - touchOrigin.y) < (Screen.height / 100)) {
-					// Touch is a tap
-					if (t.position.y < Screen.height * UIManager.UIBarPercentHeight)
-					{
-						return; // User tapped UI, do not register selection
-					}
-					ScreenTap (t.position.x, t.position.y);
-				} 
-				isMoving = false;
-			}
-		}
-
-		#if UNITY_EDITOR
-
-		xyPrintOut.text = "X: " + (int)Input.mousePosition.x + ", Y: " + (int)Input.mousePosition.y;
-
-        float moveDist = 0.32f;
-
-		// If mouse clicked on screen
-		if (Input.GetMouseButtonDown (0)) {
-			if (Input.mousePosition.y < Screen.height * UIManager.UIBarPercentHeight)
-			{
-				return; // User tapped UI, do not register selection
-			}
-			ScreenTap (Input.mousePosition.x, Input.mousePosition.y);
-		}
-
-        // Speed up movement
-        if (Input.GetKey(KeyCode.LeftShift)) {
-            moveDist *= 4.0f;
+                    break;
+                case TouchPhase.Ended:
+                    if (!isMoving && Mathf.Abs(t.position.x - touchOrigin.x) < (Screen.width / 100) && 
+                        Mathf.Abs(t.position.y - touchOrigin.y) < (Screen.height / 100))
+                    {
+                        // Touch is a tap
+                        if (t.position.y < Screen.height * UIManager.UIBarPercentHeight)
+                        {
+                            return; // User tapped UI, do not register selection
+                        }
+                        ScreenTap(t.position.x, t.position.y);
+                    }
+                    isMoving = false;
+                    break;
+            }
         }
 
-        // Move camera
-        if (Input.GetKey(KeyCode.W)) {
-            Vector3 pos = Camera.main.transform.position;
-            pos.y += moveDist;
-            Camera.main.transform.position = pos;
-		}
-		else if (Input.GetKey(KeyCode.S))
-		{
-			Vector3 pos = Camera.main.transform.position;
-			pos.y -= moveDist;
-			Camera.main.transform.position = pos;
-		}
+#if UNITY_EDITOR
+        HandleEditorInputs();
+#endif
 
-        if (Input.GetKey(KeyCode.A)) {
-			Vector3 pos = Camera.main.transform.position;
-            pos.x -= moveDist;
-			Camera.main.transform.position = pos;
-        }
-
-        else if (Input.GetKey(KeyCode.D))
-		{
-			Vector3 pos = Camera.main.transform.position;
-			pos.x += moveDist;
-			Camera.main.transform.position = pos;
-		}
-		#endif
 	}
 
 	/// <summary>
@@ -140,20 +104,10 @@ public class TouchManager : MonoBehaviour {
 	/// </summary>
 	public void ClearSelectionsAndUI () {
 		// Deselect tile
-		GameSelections.selectedTile = null;
+		GameSelections.SelectedTile = null;
 
 		// Remove selection border
 		selectionBorder.SetActive (false);
-	}
-
-	// Takes 2 grid coordinates and converts them to world space coordinates
-	public Vector2 GridToScreenCoordinates (int gridX, int gridY) {
-        //float screenX = (gridX * fieldLength / GameStateManager.instance.xSize) + fieldMinX;
-        //float screenY = worldViewHeight - (gridY * worldViewHeight / GameStateManager.instance.ySize);
-
-        //Vector2 screenCoord = new Vector2 (screenX, screenY);
-        //return screenCoord;
-        return Vector2.zero;
 	}
 
 	/// <summary>
@@ -162,12 +116,7 @@ public class TouchManager : MonoBehaviour {
 	/// <param name="zoomIn">If set to <c>true</c> zoom in. Else, zoom out.</param>
 	/// <param name="x">The x coordinate.</param>
 	/// <param name="y">The y coordinate.</param>
-	public void ZoomToPoint(bool zoomIn, float x = 0, float y = 0) {
-		// Always zoom out to screen center
-		if (!zoomIn) {
-			x = Screen.width / 2;
-			y = Screen.height / 2;
-		}
+    public void MoveCameraToPoint(float x = 0, float y = 0) {
 		StartCoroutine (AnimateCameraCenter (x, y));
 	}
 
@@ -197,7 +146,7 @@ public class TouchManager : MonoBehaviour {
 
 			Camera.main.transform.position = currentPos;
 
-			yield return new WaitForSeconds (0.001f);
+            yield return null;
 		}
 
 		// Ensure the camera is in the correct position after animation
@@ -216,4 +165,55 @@ public class TouchManager : MonoBehaviour {
 
 		Camera.main.transform.position = new Vector3 (x, y, -100);
 	}
+
+    void HandleEditorInputs() 
+    {
+		xyPrintOut.text = "X: " + (int)Input.mousePosition.x + ", Y: " + (int)Input.mousePosition.y;
+
+		float moveDist = 0.32f;
+
+		// If mouse clicked on screen
+		if (Input.GetMouseButtonDown(0))
+		{
+			if (Input.mousePosition.y < Screen.height * UIManager.UIBarPercentHeight)
+			{
+				return; // User tapped UI, do not register selection
+			}
+			ScreenTap(Input.mousePosition.x, Input.mousePosition.y);
+		}
+
+		// Speed up movement
+		if (Input.GetKey(KeyCode.LeftShift))
+		{
+			moveDist *= 4.0f;
+		}
+
+		// Move camera
+		if (Input.GetKey(KeyCode.W))
+		{
+			Vector3 pos = Camera.main.transform.position;
+			pos.y += moveDist;
+			Camera.main.transform.position = pos;
+		}
+		else if (Input.GetKey(KeyCode.S))
+		{
+			Vector3 pos = Camera.main.transform.position;
+			pos.y -= moveDist;
+			Camera.main.transform.position = pos;
+		}
+
+		if (Input.GetKey(KeyCode.A))
+		{
+			Vector3 pos = Camera.main.transform.position;
+			pos.x -= moveDist;
+			Camera.main.transform.position = pos;
+		}
+
+		else if (Input.GetKey(KeyCode.D))
+		{
+			Vector3 pos = Camera.main.transform.position;
+			pos.x += moveDist;
+			Camera.main.transform.position = pos;
+		}
+    }
 }

@@ -48,42 +48,42 @@ public class UIBarButton : MonoBehaviour
 
 	void CardButtonPress()
 	{
-		Debug.Log("Move button press!");
+		Debug.Log("Card button press!");
 	}
 
 	void PawnButtonPress()
 	{
-		Debug.Log("Move button press!");
+		Debug.Log("Pawn button press!");
 	}
 
 	void ShopButtonPress()
 	{
-		Debug.Log("Move button press!");
+		Debug.Log("Shop button press!");
 	}
 
 	void SettingsButtonPress()
 	{
-		Debug.Log("Move button press!");
+		Debug.Log("Settings button press!");
 	}
 
 	void EndTurnButtonPress()
 	{
-		Debug.Log("Move button press!");
+		Debug.Log("End turn button press!");
 	}
 
 	void StatsButtonPress()
 	{
-		Debug.Log("Move button press!");
+		Debug.Log("Stats button press!");
 	}
 
 	void MoveButtonPress()
 	{
-		Debug.Log("Move button press!");
+        MovementManager.instance.ShowPawnMoveOptions();
 	}
 
 	void ActionButtonPress()
 	{
-		Debug.Log("Move button press!");
+		Debug.Log("Action button press!");
 	}
 
 	public enum ButtonType

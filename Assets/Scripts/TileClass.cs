@@ -39,11 +39,7 @@ public class WalkableTile : TileClass {
 
 
 
-	// Called when a pawn is spawned on this tile
-	public virtual void PlacePawn (PawnClass placedPawn) {
-		curPawn = placedPawn;
-		curPawn.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - 1);
-	}
+	
 }
 
 public class NonWalkableTile : TileClass {

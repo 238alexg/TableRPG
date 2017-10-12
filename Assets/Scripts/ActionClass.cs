@@ -16,16 +16,16 @@ public class ActionClass : MonoBehaviour {
 	}
 
 	public virtual void OnButtonPress() {
-		GameSelections.curAction = this;
+		GameSelections.CurAction = this;
 		print("Action button pressed!");
 	}
 
 	public virtual void OnExecution(TileContainer tile) {
         print("Action executed on " + tile.Tile.name);
 
-		GameSelections.hasMoved = true;
-		GameSelections.pawnMovesLeft = 0;
-		GameSelections.hasCompletedTurn = true;
+		GameSelections.HasMoved = true;
+		GameSelections.PawnMovesLeft = 0;
+		GameSelections.HasCompletedTurn = true;
 
 	}
 
