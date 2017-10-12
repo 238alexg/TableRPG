@@ -11,7 +11,7 @@ public class SwordStrike : AttackAction {
 
 		base.OnButtonPress ();
 
-		List<TileClass> adjacentTiles = new List<TileClass> ();
+        List<TileContainer> adjacentTiles = new List<TileContainer> ();
 
 		// Check left boundry
 		if (pawn.x > 0) {
@@ -30,9 +30,9 @@ public class SwordStrike : AttackAction {
 			adjacentTiles.Add (GameStateManager.instance.tiles[pawn.x, pawn.y+1]);
 		}
 
-		foreach (TileClass tc in adjacentTiles) {
+        foreach (TileContainer tc in adjacentTiles) {
 			// There is a pawn here
-			PawnClass pawn = tc.curPawn;
+            PawnClass pawn = tc.Pawn;
 
 			if (pawn != null && pawn.ownership != GameStateManager.instance.turn) {
 				tileOptions.Add (tc);
@@ -50,7 +50,7 @@ public class SwordStrike : AttackAction {
 	/// Raises the execution event.
 	/// </summary>
 	/// <param name="tile">Tile.</param>
-	public override void OnExecution (TileClass tile) {
+    public override void OnExecution (TileContainer tile) {
 
 		bool didHit = CheckHitChance ();
 
@@ -58,7 +58,7 @@ public class SwordStrike : AttackAction {
 			// TODO: Add miss animation here
 			print(pawn.pawnName + " missed!");
 		} else {
-			PawnClass victim = tile.curPawn;
+            PawnClass victim = tile.Pawn;
 			victim.HurtPawn (this.damage, attacker: this.pawn);
 		}
 	}

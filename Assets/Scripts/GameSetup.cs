@@ -6,7 +6,9 @@ using UnityEngine.Assertions;
 public class GameSetup : MonoBehaviour {
 
 	public GameObject background;
-	public TileClass tile;
+    public TileContainer TileContainerPrefab;
+
+    static int SpriteSize = GameStateManager.SpriteSize;
 
 	public PredefinedMapSize[] mapSizes;
 	public startingPawnSetup[] pawnSetups;
@@ -22,11 +24,11 @@ public class GameSetup : MonoBehaviour {
 		get { return Screen.height / Screen.width; }
 	}
 
-    Vector2 spriteSize;
     int xSize, ySize;
     const int SmallMapSize = 0, MediumMapSize = 1, LargeMapSize = 2;
     const int DefaultPawnSetup = 0;
-    const int PPU = 16;
+    const int PixPerUnit = 1;
+    Vector2 PixelPerfectScale = new Vector2(SpriteSize, SpriteSize);
 
 	[System.NonSerialized]
 	public float horzExtent, xyGridRatio;
@@ -47,8 +49,6 @@ public class GameSetup : MonoBehaviour {
 
 
 	public void SetUpGame (PredefinedMapSize mapSize, startingPawnSetup pawnSetup) {
-
-        spriteSize = tile.GetComponent<SpriteRenderer>().size;
 
 		// Create the board and tiles
 		CreateBoard (mapSize);
@@ -71,17 +71,14 @@ public class GameSetup : MonoBehaviour {
 		xSize = mapSize.x;
 		ySize = mapSize.y;
 
-		GameStateManager.instance.tiles = new TileClass[xSize, ySize];
-        Vector2 scale = Vector2.one;
-        scale.x *= 1 / spriteSize.x;
-        scale.y *= 1 / spriteSize.y;
+        GameStateManager.instance.tiles = new TileContainer[xSize, ySize];
 
 		// Make a x by y grid of tiles
 		for (int x = 0; x < xSize; x++) {
 			for (int y = 0; y < ySize; y++) {
-                Vector3 tilePos = new Vector3(x, ySize - y);
-				TileClass newTile = Instantiate(tile, tilePos, tile.transform.rotation);
-                newTile.transform.localScale = scale;
+                Vector3 tilePos = new Vector3(x * SpriteSize, (ySize - y) * SpriteSize);
+                TileContainer newTile = Instantiate(TileContainerPrefab, tilePos, TileContainerPrefab.transform.rotation);
+                newTile.transform.localScale = PixelPerfectScale;
 				GameStateManager.instance.tiles[x, y] = newTile;
 			}
 		}
@@ -107,6 +104,9 @@ public class GameSetup : MonoBehaviour {
 				PawnClass p1Spawn = Instantiate(pawnSetup.startingPawns[i]);
 				PawnClass p2Spawn = Instantiate(pawnSetup.startingPawns[i]);
 
+                p1Spawn.transform.localScale = PixelPerfectScale;
+                p2Spawn.transform.localScale = PixelPerfectScale;
+
 				p1Spawn.ownership = Ownership.Player1;
 				p2Spawn.ownership = Ownership.Player2;
 
@@ -118,8 +118,8 @@ public class GameSetup : MonoBehaviour {
         int xOffset = (xSize - p1Pawns.Count) / 2;
 
 		for (int i = 0; i < p1Pawns.Count; i++) {
-			WalkableTile p1Pos = (WalkableTile)GameStateManager.instance.tiles [i + xOffset, 0];
-            WalkableTile p2Pos = (WalkableTile)GameStateManager.instance.tiles [xSize - (i + xOffset) - 1, ySize - 1];
+            WalkableTile p1Pos = (WalkableTile)GameStateManager.instance.tiles [i + xOffset, 0].Tile;
+            WalkableTile p2Pos = (WalkableTile)GameStateManager.instance.tiles [xSize - (i + xOffset) - 1, ySize - 1].Tile;
 
 			// Update pawn location information
             p1Pawns [i].x = i + xOffset;
@@ -134,7 +134,7 @@ public class GameSetup : MonoBehaviour {
 	}
 
     void InitializePlayerCamera() {
-        OrthographicSize = 0.25f * (float)(Screen.height / PPU);
+        OrthographicSize = 0.25f * (float)(Screen.height / PixPerUnit);
         Camera.main.transform.position = new Vector3((float)xSize / 2, (float)ySize / 2, -100);
     }
 

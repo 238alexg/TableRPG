@@ -54,6 +54,10 @@ public class TouchManager : MonoBehaviour {
 				if (!isMoving && Mathf.Abs (t.position.x - touchOrigin.x) < (Screen.width / 100) &&
 				    Mathf.Abs (t.position.y - touchOrigin.y) < (Screen.height / 100)) {
 					// Touch is a tap
+					if (t.position.y < Screen.height * UIManager.UIBarPercentHeight)
+					{
+						return; // User tapped UI, do not register selection
+					}
 					ScreenTap (t.position.x, t.position.y);
 				} 
 				isMoving = false;
@@ -64,12 +68,21 @@ public class TouchManager : MonoBehaviour {
 
 		xyPrintOut.text = "X: " + (int)Input.mousePosition.x + ", Y: " + (int)Input.mousePosition.y;
 
-        float moveDist = 0.08f;
+        float moveDist = 0.32f;
 
 		// If mouse clicked on screen
 		if (Input.GetMouseButtonDown (0)) {
+			if (Input.mousePosition.y < Screen.height * UIManager.UIBarPercentHeight)
+			{
+				return; // User tapped UI, do not register selection
+			}
 			ScreenTap (Input.mousePosition.x, Input.mousePosition.y);
 		}
+
+        // Speed up movement
+        if (Input.GetKey(KeyCode.LeftShift)) {
+            moveDist *= 4.0f;
+        }
 
         // Move camera
         if (Input.GetKey(KeyCode.W)) {
@@ -108,20 +121,18 @@ public class TouchManager : MonoBehaviour {
 	void ScreenTap(float x, float y) {
         Vector3 screenPos = Camera.main.ScreenToWorldPoint(new Vector3(x, y));
 
-        if (screenPos.x < 0 || screenPos.x > GameStateManager.instance.xSize ||
-            screenPos.y < 0 || screenPos.y > GameStateManager.instance.ySize) {
-            // TODO: Change Bar UI to unselected state
+        if (screenPos.x < 0 || screenPos.x > GameStateManager.instance.xSize * GameStateManager.SpriteSize ||
+            screenPos.y < 0 || screenPos.y > GameStateManager.instance.ySize * GameStateManager.SpriteSize) {
+            UIManager.Instance.DeselectPawn();
             return;
         }
 
-        int tileX = Mathf.FloorToInt(screenPos.x);
-        int tileY = Mathf.FloorToInt(screenPos.y);
+        int tileX = Mathf.FloorToInt(screenPos.x / 16);
+        int tileY = Mathf.FloorToInt(screenPos.y / 16);
 
-        TileClass tile = GameStateManager.instance.tiles[tileX, GameStateManager.instance.ySize - 1 - tileY];
+        TileContainer tile = GameStateManager.instance.tiles[tileX, GameStateManager.instance.ySize - 1 - tileY];
 
-        tile.Select();
-
-        Debug.Log("Screen tapped at world location: " + screenPos.ToString());
+        tile.OnTap();
 	}
 
 	/// <summary>

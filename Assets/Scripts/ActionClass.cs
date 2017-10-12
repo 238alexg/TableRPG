@@ -9,10 +9,10 @@ public class ActionClass : MonoBehaviour {
 
 	public string actionName;
 	public PawnClass pawn;
-	public List<TileClass> tileOptions { get; protected set; }
+    public List<TileContainer> tileOptions { get; protected set; }
 
 	void Start() {
-		tileOptions = new List<TileClass> ();
+		tileOptions = new List<TileContainer> ();
 	}
 
 	public virtual void OnButtonPress() {
@@ -20,8 +20,8 @@ public class ActionClass : MonoBehaviour {
 		print("Action button pressed!");
 	}
 
-	public virtual void OnExecution(TileClass tile) {
-		print("Action executed on " + tile.tileName);
+	public virtual void OnExecution(TileContainer tile) {
+        print("Action executed on " + tile.Tile.name);
 
 		GameSelections.hasMoved = true;
 		GameSelections.pawnMovesLeft = 0;

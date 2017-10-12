@@ -30,6 +30,8 @@ public class PawnClass : MonoBehaviour {
 
 	public void SelectPawn() {
 		GameSelections.activePlayerPawn = this;
+        UIManager.Instance.LoadSelectedPawn(this, ownership == GameStateManager.instance.turn);
+        Debug.Log("Selected " + name);
 	}
 
 	/// <summary>
@@ -77,7 +79,7 @@ public class PawnClass : MonoBehaviour {
 	/// Kills the pawn, and removes it from the scene
 	/// </summary>
 	public virtual void KillPawn() {
-		GameStateManager.instance.tiles [x, y].curPawn = null;
+        GameStateManager.instance.tiles [x, y].Pawn = null;
 		Destroy (this.gameObject);
 	}
 

@@ -5,14 +5,11 @@ using UnityEngine;
 /// <summary>
 /// A class containing static variables that change frequently across the course of a turn
 /// </summary>
-public class GameSelections : MonoBehaviour {
-
-	public static GameSelections instance;
-
+public static class GameSelections {
 	[System.NonSerialized]
 	public static PawnClass activePlayerPawn;
 	public static byte pawnMovesLeft;
 	public static bool hasMoved, hasCompletedTurn;
 	public static ActionClass curAction;
-	public static TileClass selectedTile;
+    public static TileContainer selectedTile;
 }

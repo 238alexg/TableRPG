@@ -6,13 +6,14 @@ public class GameStateManager : MonoBehaviour {
 
 	// Game state data
 	public static GameStateManager instance;
+    public static int SpriteSize = 16;
 
 	public bool isSinglePlayer;
 
 	public List<PawnClass> player1Pawns;
 	public List<PawnClass> player2Pawns;
 
-	public TileClass[,] tiles;
+    public TileContainer[,] tiles;
 
 	// TODO: Implement these classes!
 	public List<ActiveEffectClass> activeEffects;
