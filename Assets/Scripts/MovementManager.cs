@@ -50,14 +50,13 @@ public class MovementManager : MonoBehaviour {
 		isMovingPawn = true;
 
 		// Show movement UI
-        Vector3 zoomCoord = new Vector3 (startTile.x * GameStateManager.SpriteSize, startTile.y * GameStateManager.SpriteSize, -100);
-        Camera.main.transform.position = zoomCoord;
-        //TouchManager.Instance.MoveCameraToPoint (zoomCoord.x, zoomCoord.y);
+        Vector3 PawnWorldCoord = new Vector3 (startTile.x * GameStateManager.SpriteSize, (GameStateManager.instance.ySize - startTile.y) * GameStateManager.SpriteSize, -100);
+        Camera.main.transform.position = PawnWorldCoord; //TouchManager.Instance.MoveCameraToPoint (zoomCoord.x, zoomCoord.y);
 
 		// Set origin tile (where pawn is starting from)
 		walkableTileOption origin = new walkableTileOption(
-            x: startTile.Pawn.x, 
-            y: startTile.Pawn.y, 
+            x: startTile.x, 
+            y: startTile.y, 
             moveCount: startTile.Pawn.moveCount, 
 			tile: startTile, 
 			prevTile: null
