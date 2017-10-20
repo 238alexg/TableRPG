@@ -50,7 +50,7 @@ public class TileContainer : MonoBehaviour {
 		{
 
 			// If tile is within selected pawn's movement range, and pawn has movement left, move it
-			if (MovementManager.instance.walkableTileOptions.Exists(wto => wto.tile == this))
+			if (MovementManager.instance.walkableTileOptions.Exists(wto => wto.Tile == this))
 			{
 				StartCoroutine(MovementManager.instance.MovePawn(this));
 				return;

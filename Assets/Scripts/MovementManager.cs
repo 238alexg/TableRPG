@@ -15,7 +15,7 @@ public class MovementManager : MonoBehaviour {
 	/// All of the walkable tiles from the origin of the selected pawn. Each tile has a reference
 	/// to a preceding tile, creating a path to the origin tile.
 	/// </summary>
-	public List<walkableTileOption> walkableTileOptions = new List<walkableTileOption> ();
+	public List<WalkableTileOption> walkableTileOptions = new List<WalkableTileOption> ();
 
 	/// <summary>
 	/// The time it takes to move a pawn 1 tile.
@@ -38,11 +38,8 @@ public class MovementManager : MonoBehaviour {
 	public void ShowPawnMoveOptions() {
 
 		// User has already pressed move
-		if (GameSelections.HasMoved) {
-			return;
-		} 
-
-		walkableTileOptions.Clear ();
+		if (GameSelections.HasMoved) { return; }
+		
         TileContainer startTile = GameSelections.SelectedTile;
         GameSelections.ActivePlayerPawn = startTile.Pawn;
         GameSelections.PawnMovesLeft = startTile.Pawn.moveCount;
@@ -54,7 +51,7 @@ public class MovementManager : MonoBehaviour {
         Camera.main.transform.position = PawnWorldCoord; //TouchManager.Instance.MoveCameraToPoint (zoomCoord.x, zoomCoord.y);
 
 		// Set origin tile (where pawn is starting from)
-		walkableTileOption origin = new walkableTileOption(
+		WalkableTileOption origin = new WalkableTileOption(
             x: startTile.x, 
             y: startTile.y, 
             moveCount: startTile.Pawn.moveCount, 
@@ -62,13 +59,14 @@ public class MovementManager : MonoBehaviour {
 			prevTile: null
 		);
 
-		// Add origin tile to the walkable tile set and start process of checking walkable sides.
-		walkableTileOptions.Add (origin);
-		checkWalkableSides (origin);
+		// Add origin tile to new walkable tile set and start process of checking walkable sides.
+		walkableTileOptions.Clear();
+        walkableTileOptions.Add (origin);
+		CheckWalkableSides (origin);
 
 		// Display walkable spaces
-		foreach (walkableTileOption wto in walkableTileOptions) {
-			//StartCoroutine (wto.tile.dimSelection (wto.tile.GetComponent <SpriteRenderer> ()));
+		foreach (WalkableTileOption wto in walkableTileOptions) {
+            StartCoroutine(wto.Tile.DimSelection());
 		}
 	}
 
@@ -78,48 +76,44 @@ public class MovementManager : MonoBehaviour {
 	/// <param name="moveCount">Move count of the pawn.</param>
 	/// <param name="x">The x coordinate of the tile.</param>
 	/// <param name="y">The y coordinate of the tile.</param>
-	public void GenerateWalkableTileList(int moveCount, int x, int y, walkableTileOption precedingTile) {
+	public void GenerateWalkableTileList(int moveCount, int x, int y, WalkableTileOption precedingTile) {
 
         TileContainer curTile = GameStateManager.instance.tiles [x, y];
 
 		// If tile isn't walkable, no moves left, or tile has pawn on it
-        if (GameSelections.ActivePlayerPawn.PawnCanWalkOnTile (curTile.Tile) && moveCount >= 0) {
-			walkableTileOption wto = walkableTileOptions.Find (w => (w.x == x && w.y == y));
+        if (moveCount >= 0 && GameSelections.ActivePlayerPawn.PawnCanWalkOnTile (curTile)) {
+			WalkableTileOption wto = walkableTileOptions.Find (w => (w.X == x && w.Y == y));
 
-			if (wto == null) {
-				// Create wto
-				wto = new walkableTileOption (
-                    x: x, y: y, moveCount: moveCount, tile: curTile, prevTile: precedingTile
-				);
-
+			if (wto == null) { // Create wto if it doesn't exist yet
+				wto = new WalkableTileOption (x, y, moveCount, curTile, precedingTile);
 				walkableTileOptions.Add (wto);
-				checkWalkableSides (wto);
+				CheckWalkableSides (wto);
 			} 
-            else if (wto.moveCount < moveCount) {
-				wto.moveCount = moveCount;
-				wto.precedingTile = precedingTile;
-				checkWalkableSides (wto);
+            else if (wto.MoveCount < moveCount) {
+				wto.MoveCount = moveCount;
+				wto.PrecedingTile = precedingTile;
+				CheckWalkableSides (wto);
 			}
 		}
 	}
 
 	// Evaluates walkable tiles within move distance from all sides of a given tile (x,y)
-	public void checkWalkableSides(walkableTileOption tile) {
+    public void CheckWalkableSides(WalkableTileOption tile) {
 		// Check left boundry
-		if (tile.x > 0) {
-			GenerateWalkableTileList (tile.moveCount - 1, tile.x - 1, tile.y, tile);
+		if (tile.X > 0) {
+			GenerateWalkableTileList (tile.MoveCount - 1, tile.X - 1, tile.Y, tile);
 		}
 		// Check right boundry
-		if (tile.x < GameStateManager.instance.xSize - 1) {
-			GenerateWalkableTileList (tile.moveCount - 1, tile.x + 1, tile.y, tile);
+		if (tile.X < GameStateManager.instance.xSize - 1) {
+			GenerateWalkableTileList (tile.MoveCount - 1, tile.X + 1, tile.Y, tile);
 		}
 		// Check top boundry
-		if (tile.y > 0) {
-			GenerateWalkableTileList (tile.moveCount - 1, tile.x, tile.y - 1, tile);
+		if (tile.Y > 0) {
+			GenerateWalkableTileList (tile.MoveCount - 1, tile.X, tile.Y - 1, tile);
 		}
 		// Check bottom boundry
-		if (tile.y < GameStateManager.instance.ySize - 1) {
-			GenerateWalkableTileList (tile.moveCount - 1, tile.x, tile.y + 1, tile);
+		if (tile.Y < GameStateManager.instance.ySize - 1) {
+			GenerateWalkableTileList (tile.MoveCount - 1, tile.X, tile.Y + 1, tile);
 		}
 	}
 
@@ -133,9 +127,9 @@ public class MovementManager : MonoBehaviour {
 
 		// Get pawn, destination, and path
 		PawnClass pawn = GameSelections.ActivePlayerPawn;
-		walkableTileOption destination = walkableTileOptions.Find (w => w.tile == destTile);
+		WalkableTileOption destination = walkableTileOptions.Find (w => w.Tile == destTile);
 
-		walkableTileOption[] path = createWalkingPath (destination, pawn.moveCount);
+		WalkableTileOption[] path = CreateWalkingPath (destination);
 
 		// Check to see if pawn has already moved
 		if (GameSelections.HasMoved) {
@@ -147,18 +141,18 @@ public class MovementManager : MonoBehaviour {
 
 		// Move pawn 1 tile at a time, triggering all OnWalkOver effects of tiles en route
 		for (int i = 0; i < path.Length; i++) {
-			yield return StartCoroutine(movePawnToNextLocation (pawn.transform, endPos: path[i].tile.transform.position));
-            path [i].precedingTile.tile.Pawn = null;
+			yield return StartCoroutine(MovePawnToNextLocation (pawn.transform, endPos: path[i].Tile.transform.position));
+            path [i].PrecedingTile.Tile.Pawn = null;
 
 			// Update selected tile
-			GameSelections.SelectedTile = path [i].tile;
+			GameSelections.SelectedTile = path [i].Tile;
 
 			// Set pawn location
-			pawn.x = path [i].x;
-			pawn.y = path [i].y;
+			pawn.x = path [i].X;
+			pawn.y = path [i].Y;
 
-            path [i].tile.Pawn = pawn;
-            path [i].tile.Tile.OnWalkOver ();
+            path [i].Tile.Pawn = pawn;
+            path [i].Tile.Tile.OnWalkOver ();
 		}
 
 		walkableTileOptions.Clear ();
@@ -167,11 +161,11 @@ public class MovementManager : MonoBehaviour {
 		if (GameSelections.PawnMovesLeft > 0) {
 
 			walkableTileOptions.Add (destination);
-			checkWalkableSides (destination);
+			CheckWalkableSides (destination);
 
 			// Display walkable spaces
-			foreach (walkableTileOption wto in walkableTileOptions) {
-				StartCoroutine (wto.tile.DimSelection ());
+			foreach (WalkableTileOption wto in walkableTileOptions) {
+				StartCoroutine (wto.Tile.DimSelection ());
 			}
 		} else {
 			isMovingPawn = false;
@@ -181,52 +175,53 @@ public class MovementManager : MonoBehaviour {
 	/// <summary>
 	/// Moves the pawn to next location.
 	/// </summary>
-	/// <param name="pawn">Transform of pawn.</param>.</param>
+	/// <param name="pawn">Transform of pawn.</param>
 	/// <param name="endPos">Ending position of pawn.</param>
-	IEnumerator movePawnToNextLocation(Transform pawn, Vector3 endPos) {
+    IEnumerator MovePawnToNextLocation(Transform pawn, Vector3 endPos) {
 
 		Vector3 startPos = pawn.position;
 		Vector3 curPos = pawn.position;
 
 		float startTime = Time.time;
 		float fracJourney = 0;
+        const float journeyIncrement = 0.01f;
 
 		while (fracJourney < 1) {
 			curPos = Vector3.Lerp(startPos, endPos, fracJourney);
 
 			pawn.position = curPos;
 
-			fracJourney += 0.04f;
+            fracJourney += journeyIncrement;
 
-			yield return new WaitForSeconds (0.01f * movementTime);
+            yield return null;
 		}
 		pawn.position = endPos;
 	}
 
-	private walkableTileOption[] createWalkingPath(walkableTileOption destination, int pawnMoveCount) {
+	private WalkableTileOption[] CreateWalkingPath(WalkableTileOption destination) {
 
-		walkableTileOption[] path = new walkableTileOption[GameSelections.PawnMovesLeft - destination.moveCount];
-		walkableTileOption curWTO = destination;
+		WalkableTileOption[] path = new WalkableTileOption[GameSelections.PawnMovesLeft - destination.MoveCount];
+		WalkableTileOption curWTO = destination;
 
 		for (int i = path.Length - 1; i >= 0; i--) {
 			path [i] = curWTO;
-			curWTO = curWTO.precedingTile;
+			curWTO = curWTO.PrecedingTile;
 		}
 		return path;
 	}
 
 
-	public class walkableTileOption {
-		public int x, y, moveCount;
-        public TileContainer tile;
-		public walkableTileOption precedingTile;
+	public class WalkableTileOption {
+        public int X, Y, MoveCount;
+        public TileContainer Tile;
+        public WalkableTileOption PrecedingTile;
 
-		public walkableTileOption(int x, int y, int moveCount, TileContainer tile, walkableTileOption prevTile) {
-			this.x = x;
-			this.y = y;
-			this.moveCount = moveCount;
-			this.tile = tile;
-			this.precedingTile = prevTile;
+		public WalkableTileOption(int x, int y, int moveCount, TileContainer tile, WalkableTileOption prevTile) {
+			this.X = x;
+			this.Y = y;
+			this.MoveCount = moveCount;
+			this.Tile = tile;
+			this.PrecedingTile = prevTile;
 		}
 	}
 

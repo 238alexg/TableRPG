@@ -14,7 +14,7 @@ public class PawnClass : MonoBehaviour {
 	public int enemiesKilled, veteranKillsNeeded, masterKillsNeeded;
 
 	public List<ActionClass> actions; // TODO: Implement the ActionClass class!
-	public List<System.Type> tilesAllowedToWalkOver = new List<System.Type>() { typeof(WalkableTile) };
+    public List<System.Type> TilesAllowedToWalkOver = new List<System.Type>() { typeof(GrassTile) };
 
 	// Turn-dynamic stats
 	[System.NonSerialized]
@@ -66,7 +66,7 @@ public class PawnClass : MonoBehaviour {
 			}
 		}
 
-		foreach (System.Type t in tilesAllowedToWalkOver) {
+		foreach (System.Type t in TilesAllowedToWalkOver) {
 			if (t != typeof(WalkableTile)) {
 				abilitiesLine += t.ToString () + " Walking" + System.Environment.NewLine;
 			}
@@ -88,8 +88,8 @@ public class PawnClass : MonoBehaviour {
 	/// </summary>
 	/// <returns><c>true</c> if this instance can walk on the tile; otherwise, <c>false</c>.</returns>
 	/// <param name="tile">Tile to be walked on.</param>
-	public virtual bool PawnCanWalkOnTile(TileClass tile) {
-		return (tile is WalkableTile && tile.curPawn == null);
+    public virtual bool PawnCanWalkOnTile(TileContainer tc) {
+        return (tc.Pawn == null && TilesAllowedToWalkOver.Contains(tc.Tile.GetType()));
 	}
 
 	/// <summary>
