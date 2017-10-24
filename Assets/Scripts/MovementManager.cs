@@ -184,7 +184,7 @@ public class MovementManager : MonoBehaviour {
 
 		float startTime = Time.time;
 		float fracJourney = 0;
-        const float journeyIncrement = 0.01f;
+        const float journeyIncrement = 0.05f;
 
 		while (fracJourney < 1) {
 			curPos = Vector3.Lerp(startPos, endPos, fracJourney);

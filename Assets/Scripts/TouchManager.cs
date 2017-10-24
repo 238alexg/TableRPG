@@ -37,7 +37,10 @@ public class TouchManager : MonoBehaviour {
             switch (t.phase)
             {
                 case TouchPhase.Began:
-                    touchOrigin = Input.GetTouch(0).position;
+                    if (Input.GetTouch(0).position.y >= Screen.height * UIManager.UIBarPercentHeight)
+                    {
+                        touchOrigin = Input.GetTouch(0).position;
+                    }
                     break;
                 case TouchPhase.Moved:
                     if (isMoving)
