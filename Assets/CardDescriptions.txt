@@ -1,0 +1,96 @@
+﻿<Knight>
+Charge: Units gain +1 attack and movement this turn.
+Ambition: Allow a pawn to act twice.
+Defend: Give a pawn +2 defense.
+Pride: Give your hero +1/+1 for each other friendly pawn.
+Cast Light: Remove all effects from a pawn.
+Minor Might: Set a friendly pawn's health to 1. It is invulnerable this turn.
+Smite: Deal 2 damage.
+Petrify: Give a pawn -1/-1 this turn. It cannot move to do Actions until your next turn.
+Swear Oath: Transform a swordsman into a knight.
+Divine Aid: Heal 4 health to a pawn.
+Frontline: Pawns on or past the center tile gain +1/+1.
+Rightful Heir: Give your hero +1/+1. It is invulnerable until your next turn.
+Brilliance: Deal 1 damage to all enemy pawns.
+</Knight>
+
+<Devil>
+Leach: Deal 1 damage to your hero and draw a card.
+Recall Souls: The damage taken by your pawns this turn heals your hero.
+Harvest Soul: Get 5 Gold for each damage taken by your pawns this turn.
+Gamble: Deal 1 damage to all pawns. Recieve 1 gold for each.
+Lust: Spawn a 0/7 Succubus at Range 2 with the Seduce Ability.
+Bloodlust: Select a pawn. Each time it takes damage, give it +1 attack.
+Voodoo: Deal 1 damage to your hero. Deal 3 damage.
+Life Exchange: Select a pawn. Kill it and a pawn at Range 1.
+Molten Earth: Flood a tile at Range 2 with Lava.
+Hell Hounds: Summon a 3/2 Hell Hound on a lava tile.
+Sacrificial Blast: Select a pawn. Kill it and deal 2 damage to enemy pawns at range 2.
+Back to Ash: Level a forest at Range 4. Flood it with lava. Restore 1 health to your hero.
+Golden Inferno: If your hero is on a mine, deal 3 damage to it. Turn the tile into lava and flood it. +20 gold.
+</Devil>
+
+<Pirate>
+Set Course: Give a pawn +2 movement. Move an extra pawn this turn.
+Stowaway: Place a 1/2 stowaway at Range 1.
+Plunder: Generate Gold from mines at the end of your turn.
+High Tide: Flood a tile with water at Range 1.
+Blunderbuss: Give a pawn the Hip Fire Ability.
+Surge: Give a pawn +1/+1 this turn for each adjascent stream.
+Drown: Deal 2 damage to a pawn for each adjascent stream.
+Bribery: Spend 10 gold and give a pawn the Seduce Ability.
+Reveler: Give a pawn +3 attack. Deal 2 damage to it next turn.
+Raze: Level all terrain tiles at Range 1 of a pawn.
+Full Sail: Give a pawn +3 movement if it crosses water this turn.
+Drop Anchor: Give a pawn +2 health and the Hip Fire Ability. It can no longer move.
+Treachary: Steal a card from your opponent's hand.
+</Pirate>
+
+<Nymph>
+Mark: Give a swordsman the archery Action.
+Wither: Remove a forest at Range 1 and level 3 terrain tiles.
+Call of the Wild: Deal 1 damage to all enemy pawns at Range 1 of forests.
+Spread Roots: Place 2 forests.
+Natural Selection: Pawns in forests gain +1/+1 if friendly, -1/-1 if not.
+Bark Skin: Give a pawn +3 health.
+Porkupine: Any pawn attacking this pawn takes an additional 1 damage.
+Regrowth: Give all pawns +1 health.
+Deteriorate: Infect a stronghold at Range 2. Infected strongholds must be dealt damage on their next turn or they become yours.
+Rot: Deal 2 damage to a pawn and give it the Infect Ability.
+Allure: Give a pawn the Seduce Ability.
+Growth and Decay: Give a pawn +2/+2 and deal one damage to it on your turns.
+Circle of Life: Select a pawn. Deal 2 damage at Range 2, then heal it for 2.
+</Nymph>
+
+<Dwarf>
+Insurance: Spend 5 gold to restore 5 health.
+Invest: Generate 5 gold for each pawn. You cannot perform actions this turn.
+Hammer Toss: Deal 3 damage at Range 2.
+Coin Toss: Give a pawn +1/+1 or -1/-1.
+Mercenaries: Spend 10 gold to another pawn this turn.
+Gold Lust: Friendly pawns on mines gain 3 health.
+Mountain Range: Friendly pawns on mountains gain Archery.
+Raise Stakes: Pay double the cost of a pawn. Place 3 of them.
+Reinforce: Pay the cost of a pawn. The next one placed has double stats.
+Harvest: Destroy a terrain tile and gain 10 gold.
+Engineer: Spend 20 gold to research a new trait for your pawns.
+Intrest: Get double gold from a gold card.
+Fools Gold: Gain gold enemy would get from mines next turn.
+</Dwarf>
+
+<Required>
+Gold Tooth: +10 Gold.
+Gold Heirloom: +15 Gold.
+Gold Chest: +20 Gold.
+Gold Fever: +25 Gold.
+Gold Rush: +30 Gold.
+</Required>
+
+<Generic>
+Upgrade: Give 2 pawns +1/+1.
+Volunteers: Place a pawn for half cost.
+Investment: Get 2X gold next turn.
+Level: Destroy a terrain tile.
+Rush: Move an extra pawn.
+Brothers In Arms: Perform 2 Actions this turn.
+</Generic>

@@ -110,7 +110,7 @@ public class TouchManager : MonoBehaviour {
 		GameSelections.SelectedTile = null;
 
 		// Remove selection border
-		selectionBorder.SetActive (false);
+		selectionBorder.SetActiveIfChanged (false);
 	}
 
 	/// <summary>
