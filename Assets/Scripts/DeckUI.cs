@@ -39,9 +39,9 @@ public class DeckUI : MonoBehaviour {
 		for (int i = 0; i < cards.Count; i++)
 		{
 			CardBookmark bookmarkToUpdate = (i >= CardLibraryBookmarks.Count) 
-				? CreateNewCardBookmark (i, CardLibrary) 
+				? CreateNewCardBookmark (index: i, isLibrary: true) 
 				: CardLibraryBookmarks [i];
-			UpdateCardBookmark (cards[i], bookmarkToUpdate);
+			UpdateCardBookmark (cards[i], bookmarkToUpdate, isLibrary: true);
 		}
 
 		if (cards.Count < CardLibraryBookmarks.Count) {
@@ -52,8 +52,18 @@ public class DeckUI : MonoBehaviour {
 		}
 	}
 
-	CardBookmark CreateNewCardBookmark(int index, Transform scrollTransform) 
+	public void SetDeckStarterCards()
 	{
+		List<Card> deck = DeckStorage.Inst.CurrentPlayerDeck;
+		for (int i = 0; i < deck.Count; i++) 
+		{
+			AddCardToPlayerDeckList (deck[i]);
+		}
+	}
+
+	CardBookmark CreateNewCardBookmark(int index, bool isLibrary) 
+	{
+		Transform scrollTransform = isLibrary ? CardLibrary : DeckList;
 		GameObject newBookmarkGameObject = Instantiate (CardBookmarkPrefab, scrollTransform);
 		CardBookmark newCardBookmark = newBookmarkGameObject.GetComponent <CardBookmark>();
 
@@ -64,24 +74,35 @@ public class DeckUI : MonoBehaviour {
 		else 
 		{ 
 			newCardBookmark.Initialize (index);
-			CardLibraryBookmarks.Add (newCardBookmark); 
+			List<CardBookmark> bookmarkList = isLibrary ? CardLibraryBookmarks : DeckListBookmarks;
+			bookmarkList.Add (newCardBookmark); 
 		}
 		return newCardBookmark;
 	}
 
-	void UpdateCardBookmark(Card card, CardBookmark cardBookmark) 
+	void UpdateCardBookmark(Card card, CardBookmark cardBookmark, bool isLibrary) 
 	{
 		cardBookmark.CardName.text = card.Name;
 		cardBookmark.CardDescription.text = card.Description;
 		cardBookmark.Card = card;
 
-		cardBookmark.Button.onClick.AddListener (() => LoadCardIntoUI (card));
+		if (isLibrary) 
+		{
+			cardBookmark.Button.onClick.AddListener (() => LoadCardIntoUI (card));
+		} 
+		else 
+		{
+			cardBookmark.Button.onClick.AddListener (() => RemoveCardFromPlayerDeckList (card));
+		}
+
 	}
 
 	public void LoadCardIntoUI(Card card) {
 		CardDetailName.text = card.Name;
 		CardDetailDescription.text = card.Description;
-		CardDetailBackground.color = GetColorFromCardClass (card.Class);
+		Color baseColor = GetColorFromCardClass (card.Class);
+		baseColor.a = 0.3f;
+		CardDetailBackground.color = baseColor;
 
 		CurrentSelectedCard = card;
 
@@ -90,21 +111,78 @@ public class DeckUI : MonoBehaviour {
 
 	public void TryAddCardButtonPress()
 	{
-		if (DeckStorage.Inst.TryAddCardToDeck (CurrentSelectedCard)) 
-		{
-			AddCardToPlayerDeckList ();
-		}
-		else 
+		Card addedCard = DeckStorage.Inst.TryAddCardToDeck (CurrentSelectedCard);
+
+		if (addedCard == null)
 		{
 			throw new UnityException("Maximum amount of card already present in deck!");
 		}
+		else if (addedCard.Count == 1) 
+		{
+			AddCardToPlayerDeckList (addedCard);
+		}
+		else 
+		{
+			foreach (CardBookmark bookmark in DeckListBookmarks) 
+			{
+				if (bookmark.CardName.text == addedCard.Name) 
+				{
+					bookmark.DoubleCount.gameObject.SetActiveIfChanged (true);
+				}
+			}
+
+		}
 	}
 
-	void AddCardToPlayerDeckList()
+	CardBookmark FindOrCreateEmptyBookmark(bool isLibrary)
 	{
-		List<Card> PlayerDeck = DeckStorage.isPlayerOnePicking ? DeckStorage.Inst.PlayerOneDeck : DeckStorage.Inst.PlayerTwoDeck;
-		CardBookmark newBookmark = CreateNewCardBookmark (DeckList.childCount, DeckList);
-		UpdateCardBookmark (CurrentSelectedCard, newBookmark);
+		List<CardBookmark> scrollList = isLibrary ? CardLibraryBookmarks : DeckListBookmarks;
+
+		foreach (CardBookmark bookmark in scrollList) 
+		{
+			if (!bookmark.gameObject.activeInHierarchy) {
+				bookmark.gameObject.SetActive (true);
+				return bookmark;
+			}
+		}
+
+		return CreateNewCardBookmark (scrollList.Count, isLibrary);
+	}
+
+	void AddCardToPlayerDeckList(Card card)
+	{
+		CardBookmark newBookmark = FindOrCreateEmptyBookmark (false);
+		UpdateCardBookmark (card, newBookmark, isLibrary: false);
+	}
+
+	void RemoveCardFromPlayerDeckList(Card card)
+	{
+		foreach (CardBookmark bookmark in DeckListBookmarks) 
+		{
+			if (bookmark.Card.Name == card.Name) 
+			{
+				if (bookmark.Card.Count > 1) 
+				{
+					bookmark.DoubleCount.gameObject.SetActiveIfChanged (false);
+				} 
+				else 
+				{
+					RemoveBookmarkFromList (bookmark, DeckListBookmarks);
+				}
+				DeckStorage.Inst.RemoveCardFromDeck (card);
+				return;
+			}
+		}
+	}
+
+	void RemoveBookmarkFromList(CardBookmark bookmark, List<CardBookmark> list)
+	{
+		// Move to end of list
+		list.Remove (bookmark);
+		list.Add (bookmark);
+
+		bookmark.transform.SetAsLastSibling ();
+		bookmark.gameObject.SetActiveIfChanged (false);
 	}
 
 	Color GetColorFromCardClass(CardClass cardClass)

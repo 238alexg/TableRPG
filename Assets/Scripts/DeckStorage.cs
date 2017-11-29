@@ -22,6 +22,10 @@ public class DeckStorage : MonoBehaviour {
 	public List<Card> PlayerTwoDiscard = new List<Card>();
 
 	public static bool isPlayerOnePicking = true;
+	public List<Card> CurrentPlayerDeck 
+	{
+		get { return isPlayerOnePicking ? PlayerOneDeck : PlayerTwoDeck; }
+	}
 
 	void Awake() 
 	{
@@ -47,28 +51,54 @@ public class DeckStorage : MonoBehaviour {
 		DeckUI.Inst.SetCardLibraryBookmarks (KnightCards);
 	}
 
-	public bool TryAddCardToDeck(Card card) {
+	public Card TryAddCardToDeck(Card card) {
 
 		const int multipleCardLimit = 2;
 
-		List<Card> PlayerCards = isPlayerOnePicking ? PlayerOneDeck : PlayerTwoDeck;
-
-		Card existingCard = FindExistingCard (PlayerCards, card);
+		Card existingCard = FindExistingCard (CurrentPlayerDeck, card);
 
 		if (existingCard == null) { 
-			PlayerCards.Add (card.Clone (1));
-			return true;
+			Card newDeckCard = card.Clone (1);
+			CurrentPlayerDeck.Add (newDeckCard);
+			return newDeckCard;
 		}
 
 		else if (existingCard.Count < multipleCardLimit) 
 		{
 			Card newDeckCard = existingCard.Clone (++existingCard.Count);
-			PlayerCards.Add (newDeckCard);
-			return true;
+			CurrentPlayerDeck.Add (newDeckCard);
+			return newDeckCard;
 		}
 		else 
 		{
-			return false;
+			return null;
+		}
+	}
+
+	public void RemoveCardFromDeck(Card card)
+	{
+		List<Card> deck = CurrentPlayerDeck;
+
+		for (int i = 0; i < deck.Count; i++)
+		{
+			if (deck[i].Name == card.Name) 
+			{
+				if (deck[i].Count == 1) 
+				{
+					deck.RemoveAt (i);
+				}
+				else // Remove one of duplicate card
+				{
+					for (int j = i + 1; j < deck.Count; j++) 
+					{
+						if (deck [j].Name == deck [i].Name) 
+						{
+							deck [i].Count = 1;
+							deck.RemoveAt (j);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -82,6 +112,20 @@ public class DeckStorage : MonoBehaviour {
 			}
 		}
 		return null;
+	}
+
+	public List<Card> RequestClassCards(CardClass cardClass)
+	{
+		switch (cardClass) {
+		case CardClass.Gold: 	return GoldCards;
+		case CardClass.Generic: return GenericCards;
+		case CardClass.Knight: 	return KnightCards;
+		case CardClass.Devil: 	return DevilCards;
+		case CardClass.Pirate: 	return PirateCards;
+		case CardClass.Nymph: 	return NymphCards;
+		case CardClass.Dwarf: 	return DwarfCards;
+		default: 				return null;
+		}
 	}
 }
 

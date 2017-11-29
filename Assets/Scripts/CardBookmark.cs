@@ -7,6 +7,7 @@ public class CardBookmark : MonoBehaviour {
 	public Button Button;
 	public Text CardName;
 	public Text CardDescription;
+	public Text DoubleCount;
 	public int Index;
 	public Card Card;
 
