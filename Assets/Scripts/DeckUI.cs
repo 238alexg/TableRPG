@@ -9,8 +9,7 @@ public class DeckUI : MonoBehaviour {
 
 	public GameObject CardDetailUI;
 	public Image CardDetailBackground;
-	public Text CardDetailName;
-	public Text CardDetailDescription;
+	public Text CardDetailName, CardDetailDescription, DeckSizeCount;
 
 	public GameObject CardBookmarkPrefab;
 
@@ -34,30 +33,23 @@ public class DeckUI : MonoBehaviour {
 		}
 	}
 
-	public void SetCardLibraryBookmarks(List<Card> cards) {
+	public void InitializeBookmarks(List<Card> cards, bool isLibrary) 
+	{
+		List<CardBookmark> CardBookmarks = isLibrary ? CardLibraryBookmarks : DeckListBookmarks;
 
 		for (int i = 0; i < cards.Count; i++)
 		{
-			CardBookmark bookmarkToUpdate = (i >= CardLibraryBookmarks.Count) 
-				? CreateNewCardBookmark (index: i, isLibrary: true) 
-				: CardLibraryBookmarks [i];
-			UpdateCardBookmark (cards[i], bookmarkToUpdate, isLibrary: true);
+			CardBookmark bookmarkToUpdate = (i >= CardBookmarks.Count) 
+				? CreateNewCardBookmark (i, isLibrary) 
+				: CardBookmarks [i];
+			UpdateCardBookmark (cards[i], bookmarkToUpdate, isLibrary);
 		}
 
-		if (cards.Count < CardLibraryBookmarks.Count) {
-			for (int i = cards.Count; i < CardLibraryBookmarks.Count; i++) 
+		if (cards.Count < CardBookmarks.Count) {
+			for (int i = cards.Count; i < CardBookmarks.Count; i++) 
 			{
-				CardLibraryBookmarks[i].gameObject.SetActiveIfChanged(false);
+				CardBookmarks[i].gameObject.SetActiveIfChanged(false);
 			}
-		}
-	}
-
-	public void SetDeckStarterCards()
-	{
-		List<Card> deck = DeckStorage.Inst.CurrentPlayerDeck;
-		for (int i = 0; i < deck.Count; i++) 
-		{
-			AddCardToPlayerDeckList (deck[i]);
 		}
 	}
 
@@ -85,7 +77,7 @@ public class DeckUI : MonoBehaviour {
 		cardBookmark.CardName.text = card.Name;
 		cardBookmark.CardDescription.text = card.Description;
 		cardBookmark.Card = card;
-		cardBookmark.Background.color = GetColorFromCardClass (card.Class);
+		cardBookmark.Background.color = card.ClassColor;
 
 		cardBookmark.Button.onClick.RemoveAllListeners ();
 		if (isLibrary) 
@@ -102,7 +94,7 @@ public class DeckUI : MonoBehaviour {
 	public void LoadCardIntoUI(Card card) {
 		CardDetailName.text = card.Name;
 		CardDetailDescription.text = card.Description;
-		Color baseColor = GetColorFromCardClass (card.Class);
+		Color baseColor = card.ClassColor;
 		baseColor.a = 0.3f;
 		CardDetailBackground.color = baseColor;
 
@@ -117,7 +109,7 @@ public class DeckUI : MonoBehaviour {
 
 		if (addedCard == null)
 		{
-			throw new UnityException("Maximum amount of card already present in deck!");
+			throw new UnityException("Card limit reached! Duplicate card already exists or deck is full.");
 		}
 		else if (addedCard.Count == 1) 
 		{
@@ -130,9 +122,19 @@ public class DeckUI : MonoBehaviour {
 				if (bookmark.CardName.text == addedCard.Name) 
 				{
 					bookmark.DoubleCount.gameObject.SetActiveIfChanged (true);
+					break;
 				}
 			}
+		}
+		UpdateDeckSizeCount ();
+	}
 
+	void UpdateDeckSizeCount()
+	{
+		string deckCountText = "Deck Count: " + DeckStorage.Inst.CurrentPlayerDeck.Count + "/" + DeckStorage.DeckSizeLimit;
+		if (DeckSizeCount.text != deckCountText) 
+		{
+			DeckSizeCount.text = deckCountText;
 		}
 	}
 
@@ -172,6 +174,7 @@ public class DeckUI : MonoBehaviour {
 					RemoveBookmarkFromList (bookmark, DeckListBookmarks);
 				}
 				DeckStorage.Inst.RemoveCardFromDeck (card);
+				UpdateDeckSizeCount ();
 				return;
 			}
 		}
@@ -187,17 +190,9 @@ public class DeckUI : MonoBehaviour {
 		bookmark.gameObject.SetActiveIfChanged (false);
 	}
 
-	Color GetColorFromCardClass(CardClass cardClass)
+	void FinishBuildingDeck()
 	{
-		switch (cardClass) {
-		case CardClass.Gold: 	return Color.white;
-		case CardClass.Generic: return Color.grey;
-		case CardClass.Knight: 	return Color.blue;
-		case CardClass.Devil: 	return Color.magenta;
-		case CardClass.Pirate: 	return Color.cyan;
-		case CardClass.Nymph: 	return Color.green;
-		case CardClass.Dwarf: 	return Color.yellow;
-		default: 				return Color.white;
-		}
+		DeckStorage.isPlayerOnePicking = !DeckStorage.isPlayerOnePicking;
+		ClassChoiceUI.Inst.BackButtonPress ();
 	}
 }

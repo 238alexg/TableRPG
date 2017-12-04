@@ -238,6 +238,7 @@ MonoBehaviour:
   CardDetailBackground: {fileID: 562483971}
   CardDetailName: {fileID: 1453335058}
   CardDetailDescription: {fileID: 150967329}
+  DeckSizeCount: {fileID: 505553654}
   CardBookmarkPrefab: {fileID: 712271658}
   CardLibrary: {fileID: 723021508}
   DeckList: {fileID: 941084521}
@@ -766,7 +767,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e75e5c35c48479f96ce0213a8f6ea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Inst: {fileID: 0}
+  ClassChoicePlayerHeader: {fileID: 1214612166}
 --- !u!114 &403835926
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -888,7 +889,7 @@ GameObject:
   - component: {fileID: 505553655}
   - component: {fileID: 505553654}
   m_Layer: 5
-  m_Name: Text
+  m_Name: DeckSizeCount
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1775,8 +1776,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 75753274}
-        m_MethodName: TryAddCardButtonPress
+      - m_Target: {fileID: 403835925}
+        m_MethodName: BackButtonPress
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2171,7 +2172,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: 0}
+  m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1063768392
 MonoBehaviour:
@@ -2511,7 +2512,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: 0}
+  m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1174999618
 MonoBehaviour:
@@ -3618,7 +3619,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1750974505
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3981,8 +3982,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 75753274}
-        m_MethodName: TryAddCardButtonPress
-        m_Mode: 1
+        m_MethodName: set_name
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

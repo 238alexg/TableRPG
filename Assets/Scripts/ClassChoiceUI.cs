@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 public class ClassChoiceUI : MonoBehaviour {
 
-	public ClassChoiceUI Inst;
+	public static ClassChoiceUI Inst;
+	public Text ClassChoicePlayerHeader;
 
 	void Awake() 
 	{
@@ -22,13 +23,20 @@ public class ClassChoiceUI : MonoBehaviour {
 	public void ChooseCardClass(string classString)
 	{
 		CardClass cardClass = StringToCardClass (classString);
-		List<Card> DeckCards = DeckStorage.Inst.RequestClassCards (cardClass);
-		DeckUI.Inst.SetCardLibraryBookmarks (DeckCards);
+		List<Card> classCards = DeckStorage.Inst.RequestClassCards (cardClass);
+
+		List<Card> LibraryCards = new List<Card> (DeckStorage.GenericCards.Count + classCards.Count);
+		LibraryCards.AddRange (DeckStorage.GenericCards);
+		LibraryCards.AddRange (classCards);
+
+		DeckUI.Inst.InitializeBookmarks (LibraryCards, isLibrary: true); // Initialize library
+		DeckUI.Inst.InitializeBookmarks (DeckStorage.Inst.CurrentPlayerDeck, isLibrary: false); // Initialize deck
 		gameObject.SetActiveIfChanged (false);
 	}
 
 	public void BackButtonPress()
 	{
+		ClassChoicePlayerHeader.text = "Player " + (DeckStorage.isPlayerOnePicking ? "1" : "2") + "'s Class";
 		gameObject.SetActiveIfChanged (true);
 	}
 

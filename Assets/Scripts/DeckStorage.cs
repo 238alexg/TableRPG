@@ -6,13 +6,17 @@ public class DeckStorage : MonoBehaviour {
 
 	public static DeckStorage Inst;
 
-	public List<Card> KnightCards = new List<Card>();
-	public List<Card> DevilCards = new List<Card>();
-	public List<Card> PirateCards = new List<Card>();
-	public List<Card> NymphCards = new List<Card>();
-	public List<Card> DwarfCards = new List<Card>();
-	public List<Card> GoldCards = new List<Card>();
-	public List<Card> GenericCards = new List<Card>();
+	public const int DeckSizeLimit = 30;
+	public const int MultipleCardLimit = 2;
+	const int goldCount = 2;
+
+	public static List<Card> KnightCards = new List<Card>();
+	public static List<Card> DevilCards = new List<Card>();
+	public static List<Card> PirateCards = new List<Card>();
+	public static List<Card> NymphCards = new List<Card>();
+	public static List<Card> DwarfCards = new List<Card>();
+	public static List<Card> GoldCards = new List<Card>();
+	public static List<Card> GenericCards = new List<Card>();
 
 	public List<Card> PlayerOneDeck = new List<Card>();
 	public List<Card> PlayerTwoDeck = new List<Card>();
@@ -41,17 +45,28 @@ public class DeckStorage : MonoBehaviour {
 
 	public void Init() 
 	{
-		const int goldCount = 2;
 		foreach (Card goldCard in GoldCards) 
 		{
 			PlayerOneDeck.Add (goldCard.Clone (goldCount));
+			PlayerOneDeck.Add (goldCard.Clone (goldCount));
 			PlayerTwoDeck.Add (goldCard.Clone (goldCount));
+			PlayerTwoDeck.Add (goldCard.Clone (goldCount));
+		}
+	}
+
+	public void ResetCurrentDeck()
+	{
+		CurrentPlayerDeck.Clear ();
+		foreach (Card goldCard in GoldCards) 
+		{
+			CurrentPlayerDeck.Add (goldCard.Clone (goldCount));
+			CurrentPlayerDeck.Add (goldCard.Clone (goldCount));
 		}
 	}
 
 	public Card TryAddCardToDeck(Card card) {
 
-		const int multipleCardLimit = 2;
+		if (CurrentPlayerDeck.Count >= DeckSizeLimit) { return null; }
 
 		Card existingCard = FindExistingCard (CurrentPlayerDeck, card);
 
@@ -61,7 +76,7 @@ public class DeckStorage : MonoBehaviour {
 			return newDeckCard;
 		}
 
-		else if (existingCard.Count < multipleCardLimit) 
+		else if (existingCard.Count < MultipleCardLimit) 
 		{
 			Card newDeckCard = existingCard.Clone (++existingCard.Count);
 			CurrentPlayerDeck.Add (newDeckCard);
@@ -143,6 +158,21 @@ public class Card
 		clone.Class = Class;
 		clone.Count = (count == -1) ? Count : count;
 		return clone;
+	}
+
+	public Color ClassColor {
+		get {
+			switch (Class) {
+			case CardClass.Gold: 	return Color.white;
+			case CardClass.Generic: return Color.grey;
+			case CardClass.Knight: 	return Color.blue;
+			case CardClass.Devil: 	return Color.magenta;
+			case CardClass.Pirate: 	return Color.cyan;
+			case CardClass.Nymph: 	return Color.green;
+			case CardClass.Dwarf: 	return Color.yellow;
+			default: 				return Color.white;
+			}
+		}
 	}
 }
 

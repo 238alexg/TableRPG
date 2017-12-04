@@ -61,22 +61,25 @@ public class CardDescriptionParser : MonoBehaviour {
 	void AddCardToClassList(Card card, CardClass cardClass) {
 		switch (cardClass) {
 		case CardClass.Knight:
-			DeckStorage.Inst.KnightCards.Add (card);
+			DeckStorage.KnightCards.Add (card);
 			return;
 		case CardClass.Devil:
-			DeckStorage.Inst.DevilCards.Add (card);
+			DeckStorage.DevilCards.Add (card);
 			return;
 		case CardClass.Pirate:
-			DeckStorage.Inst.PirateCards.Add (card);
+			DeckStorage.PirateCards.Add (card);
 			return;
 		case CardClass.Nymph:
-			DeckStorage.Inst.NymphCards.Add (card);
+			DeckStorage.NymphCards.Add (card);
 			return;
 		case CardClass.Dwarf:
-			DeckStorage.Inst.DwarfCards.Add (card);
+			DeckStorage.DwarfCards.Add (card);
 			return;
 		case CardClass.Generic:
-			DeckStorage.Inst.GenericCards.Add (card);
+			DeckStorage.GenericCards.Add (card);
+			return;
+		case CardClass.Gold:
+			DeckStorage.GoldCards.Add (card);
 			return;
 		default:
 			return;

@@ -16,4 +16,12 @@ public class CardBookmark : MonoBehaviour {
 	{
 		Index = index;
 	}
+
+	public void CopyFrom(Card card)
+	{
+		CardName.text = card.Name;
+		CardDescription.text = card.Description;
+		Card = card;
+		Background.color = card.ClassColor;
+	}
 }
