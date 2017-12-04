@@ -47,8 +47,6 @@ public class DeckStorage : MonoBehaviour {
 			PlayerOneDeck.Add (goldCard.Clone (goldCount));
 			PlayerTwoDeck.Add (goldCard.Clone (goldCount));
 		}
-
-		DeckUI.Inst.SetCardLibraryBookmarks (KnightCards);
 	}
 
 	public Card TryAddCardToDeck(Card card) {

@@ -85,7 +85,9 @@ public class DeckUI : MonoBehaviour {
 		cardBookmark.CardName.text = card.Name;
 		cardBookmark.CardDescription.text = card.Description;
 		cardBookmark.Card = card;
+		cardBookmark.Background.color = GetColorFromCardClass (card.Class);
 
+		cardBookmark.Button.onClick.RemoveAllListeners ();
 		if (isLibrary) 
 		{
 			cardBookmark.Button.onClick.AddListener (() => LoadCardIntoUI (card));
@@ -188,13 +190,13 @@ public class DeckUI : MonoBehaviour {
 	Color GetColorFromCardClass(CardClass cardClass)
 	{
 		switch (cardClass) {
-		case CardClass.Gold: 	return Color.yellow;
+		case CardClass.Gold: 	return Color.white;
 		case CardClass.Generic: return Color.grey;
 		case CardClass.Knight: 	return Color.blue;
 		case CardClass.Devil: 	return Color.magenta;
 		case CardClass.Pirate: 	return Color.cyan;
 		case CardClass.Nymph: 	return Color.green;
-		case CardClass.Dwarf: 	return Color.red;
+		case CardClass.Dwarf: 	return Color.yellow;
 		default: 				return Color.white;
 		}
 	}
