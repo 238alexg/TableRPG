@@ -10,6 +10,7 @@ public class DeckUI : MonoBehaviour {
 	public GameObject CardDetailUI;
 	public Image CardDetailBackground;
 	public Text CardDetailName, CardDetailDescription, DeckSizeCount;
+	public Button FinishDeckButton;
 
 	public GameObject CardBookmarkPrefab;
 
@@ -51,6 +52,11 @@ public class DeckUI : MonoBehaviour {
 				CardBookmarks[i].gameObject.SetActiveIfChanged(false);
 			}
 		}
+
+		if (!isLibrary)
+		{
+			UpdateDeckSizeCount();
+		}
 	}
 
 	CardBookmark CreateNewCardBookmark(int index, bool isLibrary) 
@@ -89,6 +95,7 @@ public class DeckUI : MonoBehaviour {
 			cardBookmark.Button.onClick.AddListener (() => RemoveCardFromPlayerDeckList (card));
 		}
 
+		cardBookmark.DoubleCount.gameObject.SetActiveIfChanged (card.Count > 1);
 	}
 
 	public void LoadCardIntoUI(Card card) {
@@ -105,7 +112,7 @@ public class DeckUI : MonoBehaviour {
 
 	public void TryAddCardButtonPress()
 	{
-		Card addedCard = DeckStorage.Inst.TryAddCardToDeck (CurrentSelectedCard);
+		Card addedCard = DeckStorage.Inst.CurrentPlayerDeck.TryAddCardToDeck (CurrentSelectedCard);
 
 		if (addedCard == null)
 		{
@@ -129,13 +136,15 @@ public class DeckUI : MonoBehaviour {
 		UpdateDeckSizeCount ();
 	}
 
-	void UpdateDeckSizeCount()
+	public void UpdateDeckSizeCount()
 	{
-		string deckCountText = "Deck Count: " + DeckStorage.Inst.CurrentPlayerDeck.Count + "/" + DeckStorage.DeckSizeLimit;
+		int deckSize = DeckStorage.Inst.CurrentPlayerDeck.Size;
+		string deckCountText = "Deck Count: " + deckSize + "/" + Deck.DeckSizeLimit;
 		if (DeckSizeCount.text != deckCountText) 
 		{
 			DeckSizeCount.text = deckCountText;
 		}
+		FinishDeckButton.interactable = (deckSize == Deck.DeckSizeLimit);
 	}
 
 	CardBookmark FindOrCreateEmptyBookmark(bool isLibrary)
@@ -161,6 +170,8 @@ public class DeckUI : MonoBehaviour {
 
 	void RemoveCardFromPlayerDeckList(Card card)
 	{
+		if (card.Class == CardClass.Gold) { return; }
+
 		foreach (CardBookmark bookmark in DeckListBookmarks) 
 		{
 			if (bookmark.Card.Name == card.Name) 
@@ -173,7 +184,7 @@ public class DeckUI : MonoBehaviour {
 				{
 					RemoveBookmarkFromList (bookmark, DeckListBookmarks);
 				}
-				DeckStorage.Inst.RemoveCardFromDeck (card);
+				DeckStorage.Inst.CurrentPlayerDeck.RemoveCardFromDeck (card);
 				UpdateDeckSizeCount ();
 				return;
 			}
@@ -190,7 +201,7 @@ public class DeckUI : MonoBehaviour {
 		bookmark.gameObject.SetActiveIfChanged (false);
 	}
 
-	void FinishBuildingDeck()
+	public void FinishBuildingDeck()
 	{
 		DeckStorage.isPlayerOnePicking = !DeckStorage.isPlayerOnePicking;
 		ClassChoiceUI.Inst.BackButtonPress ();

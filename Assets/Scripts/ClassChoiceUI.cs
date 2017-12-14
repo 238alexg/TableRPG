@@ -30,13 +30,16 @@ public class ClassChoiceUI : MonoBehaviour {
 		LibraryCards.AddRange (classCards);
 
 		DeckUI.Inst.InitializeBookmarks (LibraryCards, isLibrary: true); // Initialize library
-		DeckUI.Inst.InitializeBookmarks (DeckStorage.Inst.CurrentPlayerDeck, isLibrary: false); // Initialize deck
+		DeckUI.Inst.InitializeBookmarks (DeckStorage.Inst.CurrentPlayerDeck.Cards, isLibrary: false); // Initialize deck
 		gameObject.SetActiveIfChanged (false);
 	}
 
 	public void BackButtonPress()
 	{
 		ClassChoicePlayerHeader.text = "Player " + (DeckStorage.isPlayerOnePicking ? "1" : "2") + "'s Class";
+		DeckStorage.Inst.CurrentPlayerDeck.Clear ();
+		DeckUI.Inst.CardDetailUI.SetActiveIfChanged (false);
+		DeckUI.Inst.UpdateDeckSizeCount ();
 		gameObject.SetActiveIfChanged (true);
 	}
 
